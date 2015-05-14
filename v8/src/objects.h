@@ -154,6 +154,10 @@
 namespace v8 {
 namespace internal {
 
+Handle<FixedArray> ReduceFixedArrayTo2(Handle<FixedArray> array, int length);
+
+Handle<FixedArray> GetEnumPropertyKeys2(Handle<JSObject> object, bool cache_result);
+
 enum KeyedAccessStoreMode {
   STANDARD_STORE,
   STORE_TRANSITION_SMI_TO_OBJECT,

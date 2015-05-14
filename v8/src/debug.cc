@@ -2928,6 +2928,9 @@ void Debug::NotifyMessageHandler(v8::DebugEvent event,
       break;
     case v8::NewFunction:
       break;
+    case v8::PromiseEvent:
+    case v8::AsyncTaskEvent:
+      break;
     default:
       UNREACHABLE();
   }

@@ -341,6 +341,8 @@
         '../..',
       ],
       'sources': [  ### gcmole(all) ###
+        '../../src/V8NativeScriptExtension.cc',
+        '../../src/V8NativeScriptExtension.h',
         '../../src/accessors.cc',
         '../../src/accessors.h',
         '../../src/allocation.cc',

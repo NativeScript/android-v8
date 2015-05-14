@@ -5942,6 +5942,12 @@ static Handle<FixedArray> ReduceFixedArrayTo(
 }
 
 
+Handle<FixedArray> ReduceFixedArrayTo2(Handle<FixedArray> array, int length)
+{
+	return ReduceFixedArrayTo(array, length);
+}
+
+
 static Handle<FixedArray> GetEnumPropertyKeys(Handle<JSObject> object,
                                               bool cache_result) {
   Isolate* isolate = object->GetIsolate();
@@ -6037,6 +6043,11 @@ static Handle<FixedArray> GetEnumPropertyKeys(Handle<JSObject> object,
     dictionary->CopyEnumKeysTo(*storage);
     return storage;
   }
+}
+
+Handle<FixedArray> GetEnumPropertyKeys2(Handle<JSObject> object, bool cache_result)
+{
+  return GetEnumPropertyKeys(object, cache_result);
 }
 
 
