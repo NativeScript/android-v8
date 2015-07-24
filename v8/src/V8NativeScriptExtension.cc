@@ -92,44 +92,54 @@ Local<Value>* NativeScriptExtension::GetClosureObjects(Isolate *isolate, const H
 
 	i::ContextLookupFlags cxtFlags = i::FOLLOW_CHAINS;
 
-	while (!cxt->IsNativeContext())
+	while ((cxt != nullptr) && (!cxt->IsNativeContext()))
 	{
-		i::ScopeInfo *si = cxt->closure()->shared()->scope_info();
-		
-		int len = si->length();
-		
-		for (int i = 0; i < len; i++)
+		i::JSFunction *closure = cxt->closure();
+
+		if (closure != nullptr)
 		{
-			i::Object *cur = si->get(i);
+			i::SharedFunctionInfo *sharedFuncInfo = closure->shared();
 
-			if (cur->IsString())
+			if (sharedFuncInfo != nullptr)
 			{
-				i::String *s = i::String::cast(cur);
-
-				i::Handle<i::String> name = i::Handle<i::String>(s, internal_isolate);
-
-				PropertyAttributes attr;
-				i::BindingFlags bf;
-				int idx;
-
-				i::Handle<i::Object> o = cxt->Lookup(name, cxtFlags, &idx, &attr, &bf);
-
-				if (idx >= 0)
+				i::ScopeInfo *si = sharedFuncInfo->scope_info();
+		
+				if (si != nullptr)
 				{
-					i::Handle<i::Object> obj = i::Handle<i::Object>(cxt->get(idx), internal_isolate);
-
-					if (!obj->IsPrimitive())
+					int len = si->length();
+		
+					for (int i = 0; i < len; i++)
 					{
-						Local<Value> local = Utils::ToLocal(obj);
+						i::Object *cur = si->get(i);
 
-						arr.push_back(local);
+						if ((cur != nullptr) && (cur->IsString()))
+						{
+							i::String *s = i::String::cast(cur);
 
-						//obj->Print();
-						//printf(", name=%s, %d \n\n", name->ToAsciiArray(), si->get(i)->IsString());
-					}
-				}
-			}
-		}
+							i::Handle<i::String> name = i::Handle<i::String>(s, internal_isolate);
+
+							PropertyAttributes attr;
+							i::BindingFlags bf;
+							int idx;
+
+							i::Handle<i::Object> o = cxt->Lookup(name, cxtFlags, &idx, &attr, &bf);
+
+							if (idx >= 0)
+							{
+								i::Handle<i::Object> obj = i::Handle<i::Object>(cxt->get(idx), internal_isolate);
+
+								if (!obj->IsPrimitive())
+								{
+									Local<Value> local = Utils::ToLocal(obj);
+
+									arr.push_back(local);
+								}
+							}
+						}
+					} // for
+				} // si != nullptr
+			} // sharedFuncInfo != nullptr
+		} // closure != nullptr
 
 		cxt = cxt->previous();
 	}
@@ -147,31 +157,9 @@ void NativeScriptExtension::ReleaseClosureObjects(Local<Value>* closureObjects)
 
 void NativeScriptExtension::GetAssessorPair(Isolate *isolate, const Handle<Object>& obj, const Handle<String>& propName, Handle<Value>& getter, Handle<Value>& setter)
 {
-	//i::Isolate* intiso = reinterpret_cast<i::Isolate*>(isolate);
-
 	i::Handle<i::JSObject> o = Utils::OpenHandle(*obj);
 
 	i::Handle<i::String> intname = Utils::OpenHandle(*propName);
-
-/*
-	i::AccessorPair *mh = o->GetLocalPropertyAccessorPair(*intname);
-	if (mh != NULL)
-	{
-		i::Handle<i::Object> g = i::Handle<i::Object>(mh->getter(), intiso);
-
-		if (!g->IsTheHole())
-		{
-			getter = Utils::ToLocal(g);
-		}
-
-		i::Handle<i::Object> s = i::Handle<i::Object>(mh->setter(), intiso);
-
-		if (!s->IsTheHole())
-		{
-			setter = Utils::ToLocal(s);
-		}
-	}
-*/
 
 	i::MaybeHandle<i::Object> g = i::JSObject::GetAccessor(o, intname, i::AccessorComponent::ACCESSOR_GETTER);
 	if (!g.is_null())
