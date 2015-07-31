@@ -128,7 +128,7 @@ Local<Value>* NativeScriptExtension::GetClosureObjects(Isolate *isolate, const H
 							{
 								i::Handle<i::Object> obj = i::Handle<i::Object>(cxt->get(idx), internal_isolate);
 
-								if (!obj->IsPrimitive())
+								if (!obj.is_null() && obj->IsObject())
 								{
 									Local<Value> local = Utils::ToLocal(obj);
 
