@@ -246,11 +246,9 @@ NACL_ARCHES = nacl_ia32 nacl_x64
 GYPFILES = third_party/icu/icu.gypi third_party/icu/icu.gyp \
 	   build/shim_headers.gypi build/features.gypi build/standalone.gypi \
 	   build/toolchain.gypi build/all.gyp build/mac/asan.gyp \
-	   build/android.gypi test/cctest/cctest.gyp \
-	   test/unittests/unittests.gyp tools/gyp/v8.gyp \
+	   build/android.gypi \
+	   tools/gyp/v8.gyp \
 	   tools/parser-shell.gyp testing/gmock.gyp testing/gtest.gyp \
-	   buildtools/third_party/libc++abi/libc++abi.gyp \
-	   buildtools/third_party/libc++/libc++.gyp samples/samples.gyp \
 	   src/third_party/vtune/v8vtune.gyp src/d8.gyp
 
 # If vtunejit=on, the v8vtune.gyp will be appended.
