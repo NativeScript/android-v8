@@ -383,6 +383,8 @@
         '../../include/v8-version.h',
         '../../include/v8.h',
         '../../include/v8config.h',
+        '../../src/V8NativeScriptExtension.cc',
+        '../../src/V8NativeScriptExtension.h',
         '../../src/accessors.cc',
         '../../src/accessors.h',
         '../../src/allocation.cc',
