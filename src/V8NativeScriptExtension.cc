@@ -4,6 +4,7 @@
 #include "contexts.h"
 #include "globals.h"
 #include "handles.h"
+#include "assembler.h"
 #include <assert.h>
 
 
@@ -207,3 +208,6 @@ int NativeScriptExtension::GetInternalFieldCount(const v8::Local<v8::Object>& ob
 	return count;
 }
 
+void NativeScriptExtension::Probe(bool cross_compile) {
+	internal::CpuFeatures::Probe(cross_compile);
+}
