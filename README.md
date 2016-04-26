@@ -25,3 +25,7 @@ git checkout origin/x.x.xx
 ```
 ./build_fat
 ```
+
+### Outputs
+
+The build will generate three architectures `arm`, `arm64`, `x86`. The output folder is called `dist` and it's created at `v8` root level.
