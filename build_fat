@@ -1,0 +1,80 @@
+#!/bin/bash
+# this file needs to be run in the root folder of the v8 repo
+
+# notification
+spinner()
+{
+    local pid=$!
+    local delay=0.1
+    local spinstr='|/-\'
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf " [%c]  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b\b\b\b\b\b"
+    done
+    printf "    \b\b\b\b"
+}
+
+# prepare destination folder
+rm -rf dist
+mkdir -p dist/arm dist/x86 dist/arm64
+
+## prepare configuration
+NDK_BUILD_TOOLS_ARR=($ANDROID_NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/arm-linux-androideabi/bin \
+	$ANDROID_NDK/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/aarch64-linux-android/bin \
+	$ANDROID_NDK/toolchains/x86-4.9/prebuilt/linux-x86_64/i686-linux-android/bin)
+
+BUILD_TOOLS_LEN=${#NDK_BUILD_TOOLS_ARR[@]}
+
+ARCH_ARR=(android_arm \
+		android_arm64 \
+		android_ia32)
+ARCH_LEN=${#ARCH_ARR[@]}
+
+# recreate output directories
+rm -rf dist
+for ((i=0;i<=$ARCH_LEN-1;i++))
+do
+	mkdir -p dist/${ARCH_ARR[$i]}
+done
+
+V8_LIBS_PATH=
+ARM_VERSION=
+###  build each architecture
+for ((i=0;i<=$BUILD_TOOLS_LEN-1;i++))
+do
+	CURRENT_BUILD_TOOL=${NDK_BUILD_TOOLS_ARR[$i]}
+	CURRENT_ARCH=${ARCH_ARR[$i]}
+
+	# special case because build blows up if version is not defined
+	if [ $CURRENT_ARCH = "android_ia32" ]; then
+		ARM_VERSION="arm_version=7"
+	fi
+
+	# run make command to build v8
+	make $CURRENT_ARCH.release i18nsupport=off -j4 $ARM_VERSION
+
+	#export CURRENT_BUILD_TOOL
+	V8_LIBS_PATH=./out/$CURRENT_ARCH.release/obj.target/tools/gyp
+	
+	# fill array	
+	declare -a lib_files
+	lib_files=($(ls -d -1 $V8_LIBS_PATH/*\.a | grep -e "\.a"))
+
+	# for each found library generate fat equivalent
+	for current_element in ${lib_files[@]};
+	do
+		# take only the filename from the absolute path
+		(filename="${current_element##*/}" 
+
+		# get the list of all files from the current tin file
+		$CURRENT_BUILD_TOOL/ar t $current_element | \
+
+		# replace every streamed file in the new file
+		xargs -L1  $CURRENT_BUILD_TOOL/ar r dist/$CURRENT_ARCH/$filename) \
+		& spinner;
+	done
+done
+####################
