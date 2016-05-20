@@ -334,8 +334,22 @@ bool RunExtraCode(Isolate* isolate, Local<Context> context,
   ScriptOrigin origin(resource_name);
   ScriptCompiler::Source source(source_string, origin);
   Local<Script> script;
-  if (!ScriptCompiler::Compile(context, &source).ToLocal(&script)) return false;
-  if (script->Run(context).IsEmpty()) return false;
+  if (!ScriptCompiler::Compile(context, &source).ToLocal(&script)) {
+    base::OS::PrintError("# Script compile failed in %s@%d:%d\n%s\n",
+                         *String::Utf8Value(try_catch.Message()->GetScriptResourceName()),
+                         try_catch.Message()->GetLineNumber(context).FromJust(),
+                         try_catch.Message()->GetStartColumn(context).FromJust(),
+                         *String::Utf8Value(try_catch.Exception()));
+    return false;
+  }
+  if (script->Run(context).IsEmpty()) {
+    base::OS::PrintError("# Script run failed in %s@%d:%d\n%s\n",
+                         *String::Utf8Value(try_catch.Message()->GetScriptResourceName()),
+                         try_catch.Message()->GetLineNumber(context).FromJust(),
+                         try_catch.Message()->GetStartColumn(context).FromJust(),
+                         *String::Utf8Value(try_catch.Exception()));
+    return false;
+  }
   if (i::FLAG_profile_deserialization) {
     i::PrintF("Executing custom snapshot script took %0.3f ms\n",
               timer.Elapsed().InMillisecondsF());
