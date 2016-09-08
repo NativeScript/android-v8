@@ -9,9 +9,9 @@ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
 export PATH=`pwd`/depot_tools:"$PATH"
 ```
-* make sure you have curl installed
+* make sure you have these packages installed
 ```
-sudo apt-get install curl
+sudo apt-get install curl libc6-dev-i386 g++-multilib
 ```
 
 * Download Android NDK 
