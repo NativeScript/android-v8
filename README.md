@@ -3,7 +3,7 @@ Contains the Google's V8 build used in android runtime. The latest branch is [v4
 
 ### How to build (linux)
 
-* [set up](https://www.chromium.org/developers/how-tos/install-depot-tools) depot_tools: 
+* get depot tools [*](https://www.chromium.org/developers/how-tos/install-depot-tools) : 
 ```
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
