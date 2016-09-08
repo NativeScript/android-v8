@@ -14,6 +14,27 @@ export PATH=`pwd`/depot_tools:"$PATH"
 sudo apt-get install curl
 ```
 
+* Download Android NDK 
+```
+wget https://dl.google.com/android/repository/android-ndk-r12b-linux-x86_64.zip
+```
+
+* Unzip the Android NDK
+```
+unzip android-ndk-r12b-linux-x86_64.zip -d ndk12b
+```
+
+* Export ANDROID_NDK environment variable
+```
+export ANDROID_NDK=`pwd`/../ndk12b/android-ndk-r12b/
+```
+
+* Link ndk dir into v8 source path
+```
+mkdir third_party/android_tools
+ln -s $ANDROID_NDK third_party/android_tools/ndk
+```
+
 * fetch v8 (this will create a `v8` repo folder)
 * paste `build_fat` file in `v8` root dir
 * cd v8
