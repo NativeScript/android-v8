@@ -9,6 +9,10 @@ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
 export PATH=`pwd`/depot_tools:"$PATH"
 ```
+* make sure you have curl installed
+```
+sudo apt-get install curl
+```
 
 * fetch v8 (this will create a `v8` repo folder)
 * paste `build_fat` file in `v8` root dir
