@@ -2,6 +2,7 @@
 
 ndk = '11c'
 
+cd ..
 
 # get depot tools [more](https://www.chromium.org/developers/how-tos/install-depot-tools) : 
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
@@ -27,6 +28,7 @@ fi
 
 # Export ANDROID_NDK environment variable
 export ANDROID_NDK=`pwd`/ndk$ndk/android-ndk-r$ndk/
+
 
 
 # fetch v8 (this will create a `v8` repo folder)
