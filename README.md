@@ -29,20 +29,22 @@ unzip android-ndk-r12b-linux-x86_64.zip -d ndk12b
 export ANDROID_NDK=`pwd`/ndk12b/android-ndk-r12b/
 ```
 
+* fetch v8 (this will create a `v8` repo folder)
+* paste `build_fat` file in `v8` root dir
+* cd v8
+
 * Link ndk dir into v8 source path
 ```
 mkdir third_party/android_tools
 ln -s $ANDROID_NDK v8/third_party/android_tools/ndk
 ```
 
-* fetch v8 (this will create a `v8` repo folder)
-* paste `build_fat` file in `v8` root dir
-* cd v8
-* list all branches
+
+* list all tags
 ```
-git branch -r
+git tag -l
 ```
-* navigate to the chosen git branch 
+* checkout tag 
 ```
 git checkout origin/x.x.xx
 ```
@@ -53,4 +55,4 @@ git checkout origin/x.x.xx
 
 ### Outputs
 
-The build will generate three architectures `arm`, `arm64`, `x86`. The output folder is called `dist` and it's created at `v8` root level.
+The output folder is called `dist` and it's created at `v8` root level.
