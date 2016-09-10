@@ -18,6 +18,7 @@ fi
 
 
 if [! -d ndk$ndk] 
+then
     # Download Android NDK
     wget https://dl.google.com/android/repository/android-ndk-r$ndk-linux-x86_64.zip
     
