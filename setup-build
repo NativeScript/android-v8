@@ -50,7 +50,7 @@ cp ../android-v8/build_fat build_fat
 git tag -l | grep $1
 
 # checkout tag 
-git checkout origin/$1
+git checkout tags/$1
 
 echo "=========================================="
 echo
