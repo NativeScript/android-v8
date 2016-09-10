@@ -1,6 +1,9 @@
 #!/bin/bash
 
-ndk = '11c'
+if [ -z "$1" ]
+then echo "V8 tag to fetch requried" && exit -1
+fi
+ndk='11c'
 
 cd ..
 
@@ -11,14 +14,12 @@ export PATH=`pwd`/depot_tools:"$PATH"
 # make sure you have these packages installed
 read -p "Do you want to install neeed apt-get packages? " -n 1 -r
 echo
-if [[ $REPLY =~ ^[Yy]$ ]]
-then
+if [[ $REPLY =~ ^[Yy]$ ]] then
     sudo apt-get install curl libc6-dev-i386 g++-multilib
 fi
 
 
-if [! -d ndk$ndk] 
-then
+if [ ! -d ndk$ndk ]; then
     # Download Android NDK
     wget https://dl.google.com/android/repository/android-ndk-r$ndk-linux-x86_64.zip
     
@@ -40,7 +41,7 @@ cd v8
 
 # Link ndk dir into v8 source path
 mkdir third_party/android_tools
-ln -fs $ANDROID_NDK v8/third_party/android_tools/ndk
+ln -fs $ANDROID_NDK third_party/android_tools/ndk
 
 
 cp ../android-v8/build_fat build_fat

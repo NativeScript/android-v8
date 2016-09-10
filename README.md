@@ -56,3 +56,9 @@ git checkout origin/x.x.xx
 ### Outputs
 
 The output folder is called `dist` and it's created at `v8` root level.
+
+
+
+# HOW TO CREATE A NEW PATCH file
+
+git diff 04a2 b36f > patch.diff
