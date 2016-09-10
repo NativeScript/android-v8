@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#check v8 tag exists
+(git ls-remote -t --exit-code v8 refs/tags/$1; 
+if [ $? -ne 0 ] 
+then
+ echo  "v8 tag not found"
+ exit -1
+else
+ echo "v8 tag found"
+fi) &&
+
+#make sure remote exists
+git remote add v8 https://chromium.googlesource.com/v8/v8 > /dev/null 2>&1;
+
+#fetch the tag
+git fetch v8 refs/tags/$1 &&
+
+#create a local tag
+git tag tag_$1 FETCH_HEAD &&
+
+#checkout local tag to local branch
+git checkout tag_$1 -b $1 &&
+
+#remove local tag
+git tag -d tag_$1
