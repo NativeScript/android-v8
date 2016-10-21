@@ -46,8 +46,8 @@ done
 V8_LIBS_PATH=
 BUILD_TYPE="release"
 
-if [ $1 == "debug" ]; then
-	BUILD_TYPE="debug"
+if [[ $1 = "debug" ]]
+then BUILD_TYPE="debug"
 fi
 
 ###  build each architecture
