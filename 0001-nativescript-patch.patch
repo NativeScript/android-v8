@@ -149,10 +149,10 @@ index 0000000..75e0f0c
 +							i::Handle<i::String> name = i::Handle<i::String>(s, internal_isolate);
 +
 +							i::PropertyAttributes attr;
-+							i::BindingFlags bf;
++							i::InitializationFlag init_flag; i::VariableMode var_mode; 
 +							int idx;
 +
-+							i::Handle<i::Object> o = cxt->Lookup(name, cxtFlags, &idx, &attr, &bf);
++							i::Handle<i::Object> o = cxt->Lookup(name, cxtFlags, &idx, &attr, &init_flag, &var_mode);
 +
 +							if (idx >= 0)
 +							{
@@ -221,7 +221,7 @@ index 0000000..75e0f0c
 +	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
 +	// i::Object* internal_object = reinterpret_cast<i::Object*>(Utils::OpenHandle(*object));
 +
-+	i::Handle<i::FixedArray> arr = i::KeyAccumulator::GetEnumPropertyKeys(internal_isolate, obj);
++	i::Handle<i::FixedArray> arr = i::KeyAccumulator::GetOwnEnumPropertyKeys(internal_isolate, obj);
 +
 +	int len = arr->length();
 +
