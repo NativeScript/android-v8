@@ -1,20 +1,164 @@
-From 3e90a6db3cd331083c6876432fb9a248db5f2f57 Mon Sep 17 00:00:00 2001
+From b6a03fadf7868dcbf3c8e5eff40b7fc1af9f1eeb Mon Sep 17 00:00:00 2001
 From: plamen5kov <plamen.krasimirov.petkov@gmail.com>
-Date: Wed, 17 Aug 2016 09:33:37 +0300
-Subject: [PATCH] nativescript patch
+Date: Thu, 1 Dec 2016 15:32:17 +0200
+Subject: [PATCH] nativescript patch for 5.4.500.43
 
 ---
+ BUILD.gn                       |   2 +
+ build/config/gcc/BUILD.gn      | 123 ++++++++++++++++++++++
  src/V8NativeScriptExtension.cc | 231 +++++++++++++++++++++++++++++++++++++++++
  src/V8NativeScriptExtension.h  |  26 +++++
  src/api.cc                     |  18 +++-
- src/v8.gyp                     |   2 +
- 4 files changed, 275 insertions(+), 2 deletions(-)
+ 5 files changed, 398 insertions(+), 2 deletions(-)
+ create mode 100644 build/config/gcc/BUILD.gn
  create mode 100644 src/V8NativeScriptExtension.cc
  create mode 100644 src/V8NativeScriptExtension.h
 
+diff --git a/BUILD.gn b/BUILD.gn
+index dcefe37..1e68006 100644
+--- a/BUILD.gn
++++ b/BUILD.gn
+@@ -818,6 +818,8 @@ v8_source_set("v8_base") {
+     "include/v8-version.h",
+     "include/v8.h",
+     "include/v8config.h",
++    "src/V8NativeScriptExtension.cc",
++    "src/V8NativeScriptExtension.h",
+     "src/accessors.cc",
+     "src/accessors.h",
+     "src/address-map.cc",
+diff --git a/build/config/gcc/BUILD.gn b/build/config/gcc/BUILD.gn
+new file mode 100644
+index 0000000..27942cd
+--- /dev/null
++++ b/build/config/gcc/BUILD.gn
+@@ -0,0 +1,123 @@
++# Copyright 2014 The Chromium Authors. All rights reserved.
++# Use of this source code is governed by a BSD-style license that can be
++# found in the LICENSE file.
++
++import("//build/config/compiler/compiler.gni")
++import("//build/config/sanitizers/sanitizers.gni")
++import("//build/config/sysroot.gni")
++import("//build/toolchain/toolchain.gni")
++
++# This config causes functions not to be automatically exported from shared
++# libraries. By default, all symbols are exported but this means there are
++# lots of exports that slow everything down. In general we explicitly mark
++# which functiosn we want to export from components.
++#
++# Some third_party code assumes all functions are exported so this is separated
++# into its own config so such libraries can remove this config to make symbols
++# public again.
++#
++# See http://gcc.gnu.org/wiki/Visibility
++config("symbol_visibility_hidden") {
++  # Note that -fvisibility-inlines-hidden is set globally in the compiler
++  # config since that can almost always be applied.
++  cflags = [ "-fvisibility=default" ]
++}
++
++# This config is usually set when :symbol_visibility_hidden is removed.
++# It's often a good idea to set visibility explicitly, as there're flags
++# which would error out otherwise (e.g. -fsanitize=cfi-unrelated-cast)
++config("symbol_visibility_default") {
++  cflags = [ "-fvisibility=default" ]
++}
++
++# The rpath is the dynamic library search path. Setting this config on a link
++# step will put the directory where the build generates shared libraries into
++# the rpath.
++#
++# It's important that this *not* be used for release builds we push out.
++# Chrome uses some setuid binaries, and hard links preserve setuid bits. An
++# unprivileged user could gain root privileges by hardlinking a setuid
++# executable and then adding in whatever binaries they want to run into the lib
++# directory.
++#
++# Example bug: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=520126
++#
++# This is required for component builds since the build generates many shared
++# libraries in the build directory that we expect to be automatically loaded.
++# It will be automatically applied in this case by :executable_ldconfig.
++#
++# In non-component builds, certain test binaries may expect to load dynamic
++# libraries from the current directory. As long as these aren't distributed,
++# this is OK. For these cases use something like this:
++#
++#  if (is_linux && !is_component_build) {
++#    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
++#  }
++config("rpath_for_built_shared_libraries") {
++  if (!is_android) {
++    # Note: Android doesn't support rpath.
++    if (shlib_subdir != ".") {
++      rpath_link = "${shlib_subdir}/"
++    } else {
++      rpath_link = "."
++    }
++    ldflags = [
++      # Want to pass "\$". GN will re-escape as required for ninja.
++      "-Wl,-rpath=\$ORIGIN/${rpath_link}",
++      "-Wl,-rpath-link=${rpath_link}",
++    ]
++  }
++}
++
++# Settings for executables.
++config("executable_ldconfig") {
++  # WARNING! //sandbox/linux:chrome_sandbox will not pick up this
++  # config, because it is a setuid binary that needs special flags.
++  # If you add things to this config, make sure you check to see
++  # if they should be added to that target as well.
++  ldflags = []
++  if (is_android) {
++    ldflags += [
++      "-Bdynamic",
++      "-Wl,-z,nocopyreloc",
++    ]
++  } else {
++    # See the rpath_for... config above for why this is necessary for component
++    # builds. Sanitizers use a custom libc++ where this is also necessary.
++    if (is_component_build || using_sanitizer) {
++      configs = [ ":rpath_for_built_shared_libraries" ]
++    }
++    if (current_cpu == "mipsel") {
++      ldflags += [ "-pie" ]
++    }
++  }
++
++  if (!is_android || !use_gold) {
++    # Find the path containing shared libraries for this toolchain
++    # relative to the build directory. ${root_out_dir} will be a
++    # subdirectory of ${root_build_dir} when cross compiling.
++    _rpath_link = rebase_path(root_out_dir, root_build_dir)
++    if (shlib_subdir != ".") {
++      _rpath_link += "/$shlib_subdir"
++    }
++    if (is_android) {
++      _rebased_sysroot = rebase_path(sysroot, root_build_dir)
++      _rpath_link += ":$_rebased_sysroot/usr/lib"
++    }
++
++    ldflags += [
++      "-Wl,-rpath-link=$_rpath_link",
++
++      # TODO(GYP): Do we need a check on the binutils version here?
++      #
++      # Newer binutils don't set DT_RPATH unless you disable "new" dtags
++      # and the new DT_RUNPATH doesn't work without --no-as-needed flag.
++      "-Wl,--disable-new-dtags",
++    ]
++  }
++}
++
++config("no_exceptions") {
++  cflags_cc = [ "-fno-exceptions" ]
++  cflags_objcc = cflags_cc
++}
 diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
 new file mode 100644
-index 0000000..75e0f0c
+index 0000000..5dafb13
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.cc
 @@ -0,0 +1,231 @@
@@ -282,10 +426,10 @@ index 0000000..ede7550
 +	};
 +}
 diff --git a/src/api.cc b/src/api.cc
-index a4e047c..2b56833 100644
+index 6858a32..004a76b 100644
 --- a/src/api.cc
 +++ b/src/api.cc
-@@ -371,8 +371,22 @@ bool RunExtraCode(Isolate* isolate, Local<Context> context,
+@@ -409,8 +409,22 @@ bool RunExtraCode(Isolate* isolate, Local<Context> context,
    ScriptOrigin origin(resource_name);
    ScriptCompiler::Source source(source_string, origin);
    Local<Script> script;
@@ -310,19 +454,6 @@ index a4e047c..2b56833 100644
    if (i::FLAG_profile_deserialization) {
      i::PrintF("Executing custom snapshot script %s took %0.3f ms\n", name,
                timer.Elapsed().InMillisecondsF());
-diff --git a/src/v8.gyp b/src/v8.gyp
-index ef0c562..1fad759 100644
---- a/src/v8.gyp
-+++ b/src/v8.gyp
-@@ -400,6 +400,8 @@
-         '../include/v8-version.h',
-         '../include/v8.h',
-         '../include/v8config.h',
-+	'V8NativeScriptExtension.cc',
-+	'V8NativeScriptExtension.h',
-         'accessors.cc',
-         'accessors.h',
-         'address-map.cc',
 -- 
-2.7.1.windows.2
+2.5.5
 
