@@ -9,7 +9,7 @@ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
 export PATH=`pwd`/depot_tools:"$PATH"
 ```
-* make sure you have these packages installed
+* make sure you have these packages installed (Ubuntu)
 ```
 sudo apt-get install curl libc6-dev-i386 g++-multilib
 ```
@@ -30,27 +30,26 @@ export ANDROID_NDK=`pwd`/ndk12b/android-ndk-r12b/
 ```
 
 * fetch v8 (this will create a `v8` repo folder)
-* paste `build_fat` file in `v8` root dir
-* cd v8
 
 * Link ndk dir into v8 source path
 ```
 mkdir third_party/android_tools
 ln -s $ANDROID_NDK v8/third_party/android_tools/ndk
 ```
-
-
-* list all tags
+* `cd v8`
+* checkout branch heads
 ```
-git tag -l
+git checkout branch-heads/5.4
+git checkout -b <local_branch_name>
 ```
-* checkout tag 
+* run `gclient sync` (if there are any problems: delete all problematic folders and do `git checkout .`, then run `gclient sync` again)
+* run script to apply ns patch
 ```
-git checkout origin/x.x.xx
+../apply_patch
 ```
-* run command
+* build v8 (it might take a while)
 ```
-./build_fat
+../build_v8
 ```
 
 ### Outputs
@@ -58,7 +57,10 @@ git checkout origin/x.x.xx
 The output folder is called `dist` and it's created at `v8` root level.
 
 
-
 # HOW TO CREATE A NEW PATCH file
 
-git diff 04a2 b36f > patch.diff
+`git format-patch <SHA/commit> > patch.diff`
+
+# How to apply a patch
+
+`git am <path_to_patch_file>

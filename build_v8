@@ -1,12 +1,20 @@
 #!/bin/bash
 
 ## prepare configuration
+<<<<<<< HEAD
 NDK_BUILD_TOOLS_ARR=($ANDROID_NDK_HOME/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/arm-linux-androideabi/bin \
 	$ANDROID_NDK_HOME/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/aarch64-linux-android/bin \
 	$ANDROID_NDK_HOME/toolchains/x86-4.9/prebuilt/linux-x86_64/i686-linux-android/bin \
 	$ANDROID_NDK_HOME/toolchains/x86_64-4.9/prebuilt/linux-x86_64/x86_64-linux-android/bin)
 
 ARCH_ARR=(arm arm64 x86 x64)
+=======
+NDK_BUILD_TOOLS_ARR=($ANDROID_NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/arm-linux-androideabi/bin \
+	$ANDROID_NDK/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/aarch64-linux-android/bin \
+	$ANDROID_NDK/toolchains/x86-4.9/prebuilt/linux-x86_64/i686-linux-android/bin)
+
+ARCH_ARR=(arm arm64 x86)
+>>>>>>> d8fe1e9... updated build instructions
 BUILD_DIR_PREFIX="outgn"
 
 BUILD_TYPE="release"
@@ -22,7 +30,11 @@ do
 	if [[ $BUILD_TYPE == "debug" ]] ;then
 		gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args=is_debug=true symbol_level=2 target_cpu=$CURRENT_ARCH v8_target_cpu=$CURRENT_ARCH v8_enable_i18n_support=false target_os=android v8_android_log_stdout=true
 	else
+<<<<<<< HEAD
 		gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="is_official_build=true is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=true v8_enable_inspector=true"
+=======
+		gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="is_official_build=true is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=true"
+>>>>>>> d8fe1e9... updated build instructions
 	fi
 done
 
