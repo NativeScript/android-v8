@@ -1,11 +1,12 @@
 #!/bin/bash
 
 ## prepare configuration
-NDK_BUILD_TOOLS_ARR=($ANDROID_NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/arm-linux-androideabi/bin \
-	$ANDROID_NDK/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/aarch64-linux-android/bin \
-	$ANDROID_NDK/toolchains/x86-4.9/prebuilt/linux-x86_64/i686-linux-android/bin)
+NDK_BUILD_TOOLS_ARR=($ANDROID_NDK_HOME/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/arm-linux-androideabi/bin \
+	$ANDROID_NDK_HOME/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/aarch64-linux-android/bin \
+	$ANDROID_NDK_HOME/toolchains/x86-4.9/prebuilt/linux-x86_64/i686-linux-android/bin \
+	$ANDROID_NDK_HOME/toolchains/x86_64-4.9/prebuilt/linux-x86_64/x86_64-linux-android/bin)
 
-ARCH_ARR=(arm arm64 x86)
+ARCH_ARR=(arm arm64 x86 x64)
 BUILD_DIR_PREFIX="outgn"
 
 BUILD_TYPE="release"
@@ -32,7 +33,9 @@ do
 	# make fat build
 	V8_FOLDERS=(v8_base v8_libplatform v8_libbase v8_libsampler v8_nosnapshot)
 
+	SECONDS=0
 	ninja -C $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE ${V8_FOLDERS[@]}
+	echo "build finished in $SECONDS seconds"
 
 	DIST="./dist/"
 	mkdir -p $DIST/$CURRENT_ARCH
