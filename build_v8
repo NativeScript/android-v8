@@ -1,0 +1,56 @@
+#!/bin/bash
+
+## prepare configuration
+NDK_BUILD_TOOLS_ARR=($ANDROID_NDK_HOME/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/arm-linux-androideabi/bin \
+	$ANDROID_NDK_HOME/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/aarch64-linux-android/bin \
+	$ANDROID_NDK_HOME/toolchains/x86-4.9/prebuilt/linux-x86_64/i686-linux-android/bin \
+	$ANDROID_NDK_HOME/toolchains/x86_64-4.9/prebuilt/linux-x86_64/x86_64-linux-android/bin)
+
+ARCH_ARR=(arm arm64 x86 x64)
+BUILD_DIR_PREFIX="outgn"
+
+BUILD_TYPE="release"
+
+cd v8
+if [[ $1 == "debug" ]] ;then
+	BUILD_TYPE="debug"
+fi
+# generate project in release mode
+for CURRENT_ARCH in ${ARCH_ARR[@]}
+do
+	ARGS=
+	if [[ $BUILD_TYPE == "debug" ]] ;then
+		gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args=is_debug=true symbol_level=2 target_cpu=$CURRENT_ARCH v8_target_cpu=$CURRENT_ARCH v8_enable_i18n_support=false target_os=android v8_android_log_stdout=true
+	else
+		gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="is_official_build=true is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=true v8_enable_inspector=true"
+	fi
+done
+
+# compile project
+COUNT=0
+for CURRENT_ARCH in ${ARCH_ARR[@]}
+do
+	# make fat build
+	V8_FOLDERS=(v8_base v8_libplatform v8_libbase v8_libsampler v8_nosnapshot)
+
+	SECONDS=0
+	ninja -C $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE ${V8_FOLDERS[@]}
+	echo "build finished in $SECONDS seconds"
+
+	DIST="./dist/"
+	mkdir -p $DIST/$CURRENT_ARCH
+
+	CURRENT_BUILD_TOOL=${NDK_BUILD_TOOLS_ARR[$COUNT]}
+	COUNT=$COUNT+1
+	V8_FOLDERS_LEN=${#V8_FOLDERS[@]}
+	for CURRENT_V8_FOLDER in ${V8_FOLDERS[@]}
+	do	
+		LAST_PARAM=${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/${CURRENT_V8_FOLDER}/*.o
+		eval $CURRENT_BUILD_TOOL/ar r $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/$CURRENT_V8_FOLDER/lib$CURRENT_V8_FOLDER.a "${LAST_PARAM}"
+		mv $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/$CURRENT_V8_FOLDER/lib$CURRENT_V8_FOLDER.a $DIST/$CURRENT_ARCH
+	done
+
+	LAST_PARAM=${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/src/inspector/inspector/*.o
+	eval $CURRENT_BUILD_TOOL/ar r $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/src/inspector/inspector/libinspector.a "${LAST_PARAM}"
+	mv $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/src/inspector/inspector/libinspector.a $DIST/$CURRENT_ARCH
+done
