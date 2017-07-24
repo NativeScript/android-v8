@@ -50,7 +50,7 @@ git checkout origin/x.x.xx
 ```
 * run command
 ```
-./build_fat
+../build_fat
 ```
 
 ### Outputs

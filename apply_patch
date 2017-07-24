@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd v8
+git apply --cached ../5.9.211.40.patch
+git co .
+git commit -m "NativeScript patch"
