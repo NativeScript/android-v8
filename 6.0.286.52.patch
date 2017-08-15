@@ -1,22 +1,22 @@
-From d31154190931ad26bf2076cd79fd6a6e354f274d Mon Sep 17 00:00:00 2001
-From: plamen5kov <plamen.krasimirov.petkov@gmail.com>
-Date: Mon, 17 Jul 2017 16:16:49 +0300
-Subject: [PATCH] nativescript patch for 5.9.211.40
+From 102463c7eeacd05cc18749ef742e1057f79556f5 Mon Sep 17 00:00:00 2001
+From: Peter Kanev <pip3r4o@gmail.com>
+Date: Tue, 15 Aug 2017 10:51:26 +0300
+Subject: [PATCH] apply NativeScript patch
 
 ---
  BUILD.gn                       |   2 +
- src/V8NativeScriptExtension.cc | 232 +++++++++++++++++++++++++++++++++++++++++
- src/V8NativeScriptExtension.h  |  26 +++++
+ src/V8NativeScriptExtension.cc | 223 +++++++++++++++++++++++++++++++++++++++++
+ src/V8NativeScriptExtension.h  |  24 +++++
  src/api.cc                     |  18 +++-
- 4 files changed, 276 insertions(+), 2 deletions(-)
+ 4 files changed, 265 insertions(+), 2 deletions(-)
  create mode 100644 src/V8NativeScriptExtension.cc
  create mode 100644 src/V8NativeScriptExtension.h
 
 diff --git a/BUILD.gn b/BUILD.gn
-index 097e5a4..4e2a5b8 100644
+index 80d6f34133..b7890f95dc 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -1040,6 +1040,8 @@ v8_source_set("v8_base") {
+@@ -1066,6 +1066,8 @@ v8_source_set("v8_base") {
      "include/v8-util.h",
      "include/v8.h",
      "include/v8config.h",
@@ -27,10 +27,10 @@ index 097e5a4..4e2a5b8 100644
      "src/address-map.cc",
 diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
 new file mode 100644
-index 0000000..5376c3c
+index 0000000000..8d4678ecde
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.cc
-@@ -0,0 +1,232 @@
+@@ -0,0 +1,223 @@
 +#include "V8NativeScriptExtension.h"
 +#include "objects-inl.h"
 +#include "api.h"
@@ -251,25 +251,15 @@ index 0000000..5376c3c
 +	return keys;
 +}
 +
-+int NativeScriptExtension::GetInternalFieldCount(const v8::Local<v8::Object>& object)
-+{
-+	i::Handle<i::JSObject> obj = i::Handle<i::JSObject>::cast(Utils::OpenHandle(*object));
-+
-+	int count = obj->GetEmbedderFieldCount();
-+
-+	return count;
-+}
-+
 +void NativeScriptExtension::CpuFeaturesProbe(bool cross_compile) {
 +	internal::CpuFeatures::Probe(cross_compile);
 +}
-\ No newline at end of file
 diff --git a/src/V8NativeScriptExtension.h b/src/V8NativeScriptExtension.h
 new file mode 100644
-index 0000000..90f7e1f
+index 0000000000..2ec92c0f75
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.h
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,24 @@
 +#include "v8.h"
 +#include "handles.h"
 +
@@ -287,8 +277,6 @@ index 0000000..90f7e1f
 +
 +		static v8::Local<v8::Array> GetPropertyKeys(v8::Isolate *isolate, const v8::Local<v8::Context>& context, const v8::Local<v8::Object>& object, bool& success);
 +
-+		static int GetInternalFieldCount(const v8::Local<v8::Object>& object);
-+
 +        static void CpuFeaturesProbe(bool cross_compile);
 +	private:
 +		NativeScriptExtension();
@@ -298,10 +286,10 @@ index 0000000..90f7e1f
 +}
 \ No newline at end of file
 diff --git a/src/api.cc b/src/api.cc
-index 818d1f3..b62106b 100644
+index 7699bc87ec..79ff830d98 100644
 --- a/src/api.cc
 +++ b/src/api.cc
-@@ -466,8 +466,22 @@ bool RunExtraCode(Isolate* isolate, Local<Context> context,
+@@ -525,8 +525,22 @@ bool RunExtraCode(Isolate* isolate, Local<Context> context,
    ScriptOrigin origin(resource_name);
    ScriptCompiler::Source source(source_string, origin);
    Local<Script> script;
@@ -327,5 +315,5 @@ index 818d1f3..b62106b 100644
      i::PrintF("Executing custom snapshot script %s took %0.3f ms\n", name,
                timer.Elapsed().InMillisecondsF());
 -- 
-2.7.4
+2.11.0 (Apple Git-81)
 
