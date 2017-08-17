@@ -2,5 +2,6 @@
 
 cd v8
 git apply --cached ../6.0.286.52.patch
+git apply —-cached ../6.0.286.52-inspector.patch
 git checkout .
 git commit -m "NativeScript patch"
