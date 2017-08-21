@@ -50,8 +50,14 @@ git checkout origin/x.x.xx
 ```
 * run command
 ```
-../build_fat
+../apply_patch
 ```
+
+* run command
+```
+../build_v8
+```
+> you can run: `../build_v8 debug` if you want to build v8 in debug, by default it's built in release.
 
 ### Outputs
 
