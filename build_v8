@@ -87,4 +87,18 @@ for CURRENT_ARCH in ${ARCH_ARR[@]}
 	do
 		ninja -C $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE ${V8_FOLDERS[@]} run_mksnapshot
 		echo “built snapshot for $CURRENT_ARCH“
+
+		DIST="./dist/snapshots/$CURRENT_ARCH-$BUILD_TYPE/"
+		mkdir -p $DIST
+
+		SOURCE_DIR=
+		if [[ $CURRENT_ARCH == "arm64" ]] ;then
+			SOURCE_DIR=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/clang_x64_v8_$CURRENT_ARCH/mksnapshot
+		elif [[ $CURRENT_ARCH == "arm" ]] ;then
+			SOURCE_DIR=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/clang_x86_v8_$CURRENT_ARCH/mksnapshot
+		elif [[ $CURRENT_ARCH == "x86" ]] ;then
+			SOURCE_DIR=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/clang_x86/mksnapshot
+		fi
+
+		cp -r $SOURCE_DIR $DIST
 done
