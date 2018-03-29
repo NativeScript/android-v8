@@ -266,7 +266,7 @@ index 0000000..5dafb13
 +
 +	i::ContextLookupFlags cxtFlags = i::FOLLOW_CHAINS;
 +
-+	while ((cxt != nullptr) && (!cxt->IsNativeContext()))
++	if ((cxt != nullptr) && (!cxt->IsNativeContext()))
 +	{
 +		i::JSFunction *closure = cxt->closure();
 +
@@ -293,7 +293,7 @@ index 0000000..5dafb13
 +							i::Handle<i::String> name = i::Handle<i::String>(s, internal_isolate);
 +
 +							i::PropertyAttributes attr;
-+							i::InitializationFlag init_flag; i::VariableMode var_mode; 
++							i::InitializationFlag init_flag; i::VariableMode var_mode;
 +							int idx;
 +
 +							i::Handle<i::Object> o = cxt->Lookup(name, cxtFlags, &idx, &attr, &init_flag, &var_mode);
@@ -315,8 +315,6 @@ index 0000000..5dafb13
 +				} // si != nullptr
 +			} // sharedFuncInfo != nullptr
 +		} // closure != nullptr
-+
-+		cxt = cxt->previous();
 +	}
 +
 +	*length = static_cast<int>(arr.size());
@@ -337,7 +335,7 @@ index 0000000..5dafb13
 +	i::Handle<i::String> intname = Utils::OpenHandle(*propName);
 +
 +	//Isolate* isolate = object->GetIsolate();
-+	
++
 +	internal::LookupIterator it(o, intname, internal::LookupIterator::OWN);
 +	i::Handle<i::Object> maybe_pair = it.GetAccessors();
 +
@@ -403,7 +401,7 @@ index 0000000..ede7550
 +#include "handles.h"
 +
 +namespace v8 {
-+	
++
 +	class NativeScriptExtension {
 +	public:
 +		static uint8_t* GetAddress(const v8::Local<v8::Object>& obj);
@@ -411,7 +409,7 @@ index 0000000..ede7550
 +		static v8::Local<v8::Value>* GetClosureObjects(v8::Isolate *isolate, const v8::Local<v8::Function>& func, int *length);
 +
 +		static void ReleaseClosureObjects(v8::Local<v8::Value>* closureObjects);
-+		
++
 +		static void GetAssessorPair(v8::Isolate *isolate, const v8::Local<v8::Object>& obj, const v8::Local<v8::String>& propName, v8::Local<v8::Value>& getter, v8::Local<v8::Value>& setter);
 +
 +		static v8::Local<v8::Array> GetPropertyKeys(v8::Isolate *isolate, const v8::Local<v8::Context>& context, const v8::Local<v8::Object>& object, bool& success);
@@ -454,6 +452,6 @@ index 6858a32..004a76b 100644
    if (i::FLAG_profile_deserialization) {
      i::PrintF("Executing custom snapshot script %s took %0.3f ms\n", name,
                timer.Elapsed().InMillisecondsF());
--- 
+--
 2.5.5
 
