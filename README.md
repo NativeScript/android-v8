@@ -3,7 +3,7 @@ Contains the Google's V8 build used in android runtime. The latest branch is [v4
 
 ### How to build (linux)
 
-* get depot tools [more](https://www.chromium.org/developers/how-tos/install-depot-tools) : 
+* get depot tools [more](https://www.chromium.org/developers/how-tos/install-depot-tools) :
 ```
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
@@ -14,48 +14,44 @@ export PATH=`pwd`/depot_tools:"$PATH"
 sudo apt-get install curl libc6-dev-i386 g++-multilib
 ```
 
-* Download Android NDK 
+* Set Up Android NDK (linux)
 ```
 wget https://dl.google.com/android/repository/android-ndk-r12b-linux-x86_64.zip
-```
-
-* Unzip the Android NDK
-```
 unzip android-ndk-r12b-linux-x86_64.zip -d ndk12b
 ```
 
-* Export ANDROID_NDK environment variable
+* Set Up Android NDK (mac)
 ```
-export ANDROID_NDK=`pwd`/ndk12b/android-ndk-r12b/
+wget https://dl.google.com/android/repository/android-ndk-r12b-darwin-x86_64.zip
+unzip android-ndk-r12b-darwin-x86_64.zip -d ndk12b
 ```
 
-* fetch v8 (this will create a `v8` repo folder)
-* paste `build_fat` file in `v8` root dir
+* Export ANDROID_NDK_HOME environment variable
+```
+export ANDROID_NDK_HOME=`pwd`/ndk12b/android-ndk-r12b/
+```
+
+* `fetch v8` (this will create a `v8` repo folder)
 * cd v8
 
 * Link ndk dir into v8 source path
 ```
 mkdir third_party/android_tools
-ln -s $ANDROID_NDK v8/third_party/android_tools/ndk
+ln -s $ANDROID_NDK_HOME v8/third_party/android_tools/ndk
 ```
 
-
-* list all tags
+* checkout tag 6.0.286.52
 ```
-git tag -l
-```
-* checkout tag 
-```
-git checkout origin/x.x.xx
+git checkout origin/6.0.286.52
 ```
 * run command
 ```
 ../apply_patch
 ```
 
-* run command
+* run the following command in the root folder command
 ```
-../build_v8
+./build_v8
 ```
 > you can run: `../build_v8 debug` if you want to build v8 in debug, by default it's built in release.
 
