@@ -1,8 +1,20 @@
 #!/bin/bash
 
 cd v8
-git apply --cached ../6.0.286.52.patch
-git apply —-cached ../6.0.286.52-inspector.patch
-git apply —-cached ../6.0.286.52-inspector-update.patch
+
+case "$(uname -s)" in
+
+   Darwin)
+     echo 'Mac OS X'
+	 git apply --cached ../6.5.254.28-mac.patch
+
+   Linux)
+     echo 'Linux'
+	 git apply --cached ../6.5.254.28-linux.patch
+
+   *)
+     echo 'Unsupported OS'
+     ;;
+esac
 git checkout .
 git commit -m "NativeScript patch"

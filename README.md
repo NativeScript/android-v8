@@ -26,26 +26,30 @@ wget https://dl.google.com/android/repository/android-ndk-r12b-darwin-x86_64.zip
 unzip android-ndk-r12b-darwin-x86_64.zip -d ndk12b
 ```
 
-* Export ANDROID_NDK_HOME environment variable
-```
-export ANDROID_NDK_HOME=`pwd`/ndk12b/android-ndk-r12b/
-```
-
 * `fetch v8` (this will create a `v8` repo folder)
 * cd v8
 
-* Link ndk dir into v8 source path
+* Export ANDROID_NDK_HOME environment variable
 ```
-mkdir v8/third_party/android_tools
-ln -s $ANDROID_NDK_HOME v8/third_party/android_tools/ndk
+export ANDROID_NDK_HOME=/third_party/android_ndk
 ```
 
-* checkout tag 6.0.286.52
+* checkout tag 6.5.254.28
 ```
-git checkout origin/6.0.286.52
+git checkout origin/6.5.254.28
 ```
-* run `gclient sync` (if there are any problems: delete all problematic folders and do `git checkout .`, then run `gclient sync` again, you might need to go to v8/build and undo git changes before calling the glient sync again)
-* run command
+
+* Get needed tools and sync (linux) (if there are any problems with gclient sync: delete all problematic folders and do `git checkout .`, then run `gclient sync` again, you might need to go to v8/build and undo git changes before calling the glient sync again)
+```
+v8$ echo "target_os = ['android', 'linux']" >> ../.gclient && gclient sync --nohooks
+```
+
+* Get needed tools and sync (mac)
+```
+v8$ echo "target_os = ['android', 'mac']" >> ../.gclient && gclient sync --nohooks
+```
+
+* apply patch running the following command
 ```
 ../apply_patch
 ```
@@ -54,7 +58,7 @@ git checkout origin/6.0.286.52
 ```
 ./build_v8
 ```
-> you can run: `../build_v8 debug` if you want to build v8 in debug, by default it's built in release.
+> you can run: `../build_v8 debug` if you want to build v8 in debug, by default it's built in release. (You minght not be able to build in debug mode on Mac as there are some missing dependencies in the third_party folder)
 
 ### Outputs
 

@@ -21,12 +21,12 @@ case "$(uname -s)" in
      ;;
 
    *)
-     echo 'Unsupported OS' 
+     echo 'Unsupported OS'
      ;;
 esac
 
 
-ARCH_ARR=(arm arm64 x86)
+ARCH_ARR=(x86 arm arm64)
 # ARCH_ARR=(x86)
 
 BUILD_DIR_PREFIX="outgn"
@@ -53,20 +53,20 @@ COUNT=0
 for CURRENT_ARCH in ${ARCH_ARR[@]}
 do
 	# make fat build
-	V8_FOLDERS=(v8_base v8_libplatform v8_libbase v8_libsampler v8_nosnapshot v8_builtins_setup v8_builtins_generators)
+	V8_FOLDERS=(v8_base v8_libplatform v8_libbase v8_libsampler v8_nosnapshot v8_initializers v8_init)
 
 	SECONDS=0
 	ninja -C $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE ${V8_FOLDERS[@]} inspector
 	echo "build finished in $SECONDS seconds"
 
-	DIST="./dist/"	
+	DIST="./dist/"
 	mkdir -p $DIST/$CURRENT_ARCH-$BUILD_TYPE
 
 	CURRENT_BUILD_TOOL=${NDK_BUILD_TOOLS_ARR[$COUNT]}
 	COUNT=$COUNT+1
 	V8_FOLDERS_LEN=${#V8_FOLDERS[@]}
 	for CURRENT_V8_FOLDER in ${V8_FOLDERS[@]}
-	do	
+	do
 		LAST_PARAM=${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/${CURRENT_V8_FOLDER}/*.o
 		eval $CURRENT_BUILD_TOOL/ar r $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/$CURRENT_V8_FOLDER/lib$CURRENT_V8_FOLDER.a "${LAST_PARAM}"
 		mv $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/$CURRENT_V8_FOLDER/lib$CURRENT_V8_FOLDER.a $DIST/$CURRENT_ARCH-$BUILD_TYPE
