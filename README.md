@@ -36,7 +36,7 @@ export ANDROID_NDK_HOME=`pwd`/ndk12b/android-ndk-r12b/
 
 * Link ndk dir into v8 source path
 ```
-mkdir third_party/android_tools
+mkdir v8/third_party/android_tools
 ln -s $ANDROID_NDK_HOME v8/third_party/android_tools/ndk
 ```
 
@@ -44,6 +44,7 @@ ln -s $ANDROID_NDK_HOME v8/third_party/android_tools/ndk
 ```
 git checkout origin/6.0.286.52
 ```
+* run `gclient sync` (if there are any problems: delete all problematic folders and do `git checkout .`, then run `gclient sync` again, you might need to go to v8/build and undo git changes before calling the glient sync again)
 * run command
 ```
 ../apply_patch
