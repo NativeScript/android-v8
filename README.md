@@ -29,11 +29,6 @@ unzip android-ndk-r12b-darwin-x86_64.zip -d ndk12b
 * `fetch v8` (this will create a `v8` repo folder)
 * cd v8
 
-* Export ANDROID_NDK_HOME environment variable
-```
-export ANDROID_NDK_HOME=/third_party/android_ndk
-```
-
 * checkout tag 6.5.254.28
 ```
 git checkout origin/6.5.254.28
@@ -52,6 +47,11 @@ v8$ echo "target_os = ['android', 'mac']" >> ../.gclient && gclient sync --nohoo
 * apply patch running the following command
 ```
 ../apply_patch
+```
+
+* Export ANDROID_NDK_HOME environment variable
+```
+export ANDROID_NDK_HOME=/third_party/android_ndk
 ```
 
 * run the following command in the root folder command
