@@ -1,5 +1,5 @@
 # android-v8
-Contains the Google's V8 build used in android runtime. The latest branch is [v4.5.103.30](https://github.com/NativeScript/android-v8/tree/v4.5.103.30)
+Contains the Google's V8 build used in android runtime. The latest branch is [v6.5.254.28](https://github.com/NativeScript/android-v8/tree/trifonov/6.5.254.28)
 
 ### How to build (linux)
 
@@ -8,22 +8,6 @@ Contains the Google's V8 build used in android runtime. The latest branch is [v4
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
 export PATH=`pwd`/depot_tools:"$PATH"
-```
-* make sure you have these packages installed
-```
-sudo apt-get install curl libc6-dev-i386 g++-multilib
-```
-
-* Set Up Android NDK (linux)
-```
-wget https://dl.google.com/android/repository/android-ndk-r12b-linux-x86_64.zip
-unzip android-ndk-r12b-linux-x86_64.zip -d ndk12b
-```
-
-* Set Up Android NDK (mac)
-```
-wget https://dl.google.com/android/repository/android-ndk-r12b-darwin-x86_64.zip
-unzip android-ndk-r12b-darwin-x86_64.zip -d ndk12b
 ```
 
 * `fetch v8` (this will create a `v8` repo folder)
@@ -34,17 +18,22 @@ unzip android-ndk-r12b-darwin-x86_64.zip -d ndk12b
 git checkout origin/6.5.254.28
 ```
 
-* Get needed tools and sync (linux) (if there are any problems with gclient sync: delete all problematic folders and do `git checkout .`, then run `gclient sync` again, you might need to go to v8/build and undo git changes before calling the glient sync again)
+* Make sure you have these packages installed (Linux only)
+```
+sudo apt-get install curl libc6-dev-i386 g++-multilib
+```
+
+* Get needed tools and sync (Linux) (if there are any problems with gclient sync: delete all problematic folders and do `git checkout .`, then run `gclient sync` again, you might need to go to v8/build and undo git changes before calling the glient sync again)
 ```
 v8$ echo "target_os = ['android', 'linux']" >> ../.gclient && gclient sync --nohooks
 ```
 
-* Get needed tools and sync (mac)
+* Get needed tools and sync (Mac OS)
 ```
 v8$ echo "target_os = ['android', 'mac']" >> ../.gclient && gclient sync --nohooks
 ```
 
-* apply patch running the following command
+* Apply patch running the following command
 ```
 ../apply_patch
 ```
