@@ -2,3 +2,5 @@
 depot_tools/
 v8/
 ndkr16b/
+.gclient
+.gclient_entries

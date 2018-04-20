@@ -10,14 +10,6 @@ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 export PATH=`pwd`/depot_tools:"$PATH"
 ```
 
-* `fetch v8` (this will create a `v8` repo folder)
-* cd v8
-
-* checkout tag 6.5.254.28
-```
-git checkout 6.5.254.28
-```
-
 * Make sure you have these packages installed (Linux only)
 ```
 sudo apt-get install curl libc6-dev-i386 g++-multilib
@@ -42,6 +34,9 @@ unzip android-ndk-r16b-linux-x86_64.zip -d ndkr16b
 export ANDROID_NDK_HOME=`pwd`/ndkr16b/android-ndk-r16b
 ```
 
+* `fetch v8` (this will create a `v8` repo folder)
+* cd v8
+
 * Create symlinks
 ```
 mkdir third_party/android_tools
@@ -49,9 +44,14 @@ ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk
 ln -s $ANDROID_NDK_HOME third_party/android_ndk
 ```
 
+* checkout tag 6.5.254.28
+```
+git checkout 6.5.254.28
+```
+
 * Run sync
 ```
-v8$ gclient sync --nohooks
+gclient sync
 ```
 
 * Apply patch running the following command
@@ -61,7 +61,7 @@ v8$ gclient sync --nohooks
 
 * run the following command in the root folder command
 ```
-./build_v8
+../build_v8
 ```
 > you can run: `../build_v8 debug` if you want to build v8 in debug, by default it's built in release.
 
