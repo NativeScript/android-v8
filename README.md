@@ -15,7 +15,7 @@ export PATH=`pwd`/depot_tools:"$PATH"
 
 * checkout tag 6.5.254.28
 ```
-git checkout origin/6.5.254.28
+git checkout 6.5.254.28
 ```
 
 * Make sure you have these packages installed (Linux only)
@@ -39,7 +39,7 @@ unzip android-ndk-r16b-linux-x86_64.zip -d ndkr16b
 
 * Export ANDROID_NDK_HOME environment variable
 ```
-export ANDROID_NDK_HOME=/path_to/ndkr16b/android-ndk-r16b
+export ANDROID_NDK_HOME=`pwd`/ndkr16b/android-ndk-r16b
 ```
 
 * Create symlinks

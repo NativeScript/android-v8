@@ -7,10 +7,12 @@ case "$(uname -s)" in
    Darwin)
      echo 'Mac OS X'
 	 git apply --cached ../6.5.254.28-mac.patch
+   ;;
 
    Linux)
      echo 'Linux'
 	 git apply --cached ../6.5.254.28-linux.patch
+   ;;
 
    *)
      echo 'Unsupported OS'
