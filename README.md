@@ -1,5 +1,5 @@
 # android-v8
-Contains the Google's V8 build used in android runtime. The latest branch is [v4.5.103.30](https://github.com/NativeScript/android-v8/tree/v4.5.103.30)
+Contains the Google's V8 build used in android runtime. The latest branch is [v6.6.346.23](https://github.com/NativeScript/android-v8/tree/darind/6.6.346.23)
 
 ### How to build (linux)
 
@@ -9,62 +9,65 @@ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
 export PATH=`pwd`/depot_tools:"$PATH"
 ```
-* make sure you have these packages installed
+
+* Make sure you have these packages installed (Linux only)
 ```
 sudo apt-get install curl libc6-dev-i386 g++-multilib
 ```
 
-* Set Up Android NDK (linux)
+* Download and extract Android NDK 16b
+
+Mac OS:
 ```
-wget https://dl.google.com/android/repository/android-ndk-r12b-linux-x86_64.zip
-unzip android-ndk-r12b-linux-x86_64.zip -d ndk12b
+curl -O https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip
+unzip android-ndk-r16b-darwin-x86_64.zip -d ndkr16b
 ```
 
-* Set Up Android NDK (mac)
+Linux:
 ```
-wget https://dl.google.com/android/repository/android-ndk-r12b-darwin-x86_64.zip
-unzip android-ndk-r12b-darwin-x86_64.zip -d ndk12b
+curl -O https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip
+unzip android-ndk-r16b-linux-x86_64.zip -d ndkr16b
+```
+
+* Export ANDROID_NDK_HOME environment variable
+```
+export ANDROID_NDK_HOME=`pwd`/ndkr16b/android-ndk-r16b
 ```
 
 * `fetch v8` (this will create a `v8` repo folder)
 * cd v8
 
-* checkout tag 6.5.254.28
+* Create symlinks
 ```
-git checkout origin/6.5.254.28
-```
-
-* Get needed tools and sync (linux) (if there are any problems with gclient sync: delete all problematic folders and do `git checkout .`, then run `gclient sync` again, you might need to go to v8/build and undo git changes before calling the glient sync again)
-```
-v8$ echo "target_os = ['android', 'linux']" >> ../.gclient && gclient sync --nohooks
+mkdir third_party/android_tools
+ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk
+ln -s $ANDROID_NDK_HOME third_party/android_ndk
 ```
 
-* Get needed tools and sync (mac)
+* checkout tag 6.6.346.23
 ```
-v8$ echo "target_os = ['android', 'mac']" >> ../.gclient && gclient sync --nohooks
+git checkout 6.6.346.23
 ```
 
-* apply patch running the following command
+* Run sync
+```
+gclient sync
+```
+
+* Apply patch running the following command
 ```
 ../apply_patch
 ```
 
-* Export ANDROID_NDK_HOME environment variable
-```
-export ANDROID_NDK_HOME=/third_party/android_ndk
-```
-
 * run the following command in the root folder command
 ```
-./build_v8
+../build_v8
 ```
-> you can run: `../build_v8 debug` if you want to build v8 in debug, by default it's built in release. (You minght not be able to build in debug mode on Mac as there are some missing dependencies in the third_party folder)
+> you can run: `../build_v8 debug` if you want to build v8 in debug, by default it's built in release.
 
 ### Outputs
 
 The output folder is called `dist` and it's created at `v8` root level.
-
-
 
 # HOW TO CREATE A NEW PATCH file
 
