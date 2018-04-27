@@ -69,6 +69,13 @@ gclient sync
 
 The output folder is called `dist` and it's created at `v8` root level.
 
-# HOW TO CREATE A NEW PATCH file
+### HOW TO CREATE A NEW PATCH file
 
 git diff 04a2 b36f > patch.diff
+
+### What to do next
+
+* Copy the files from the **v8/dist** folder in the corresponding folder in [android-runtime](https://github.com/NativeScript/android-runtime/tree/master/test-app/runtime/src/main/libs)
+* Update the **v8-versions.json** file in the [android-runtime root folder](https://github.com/NativeScript/android-runtime/blob/master/v8-versions.json)
+* Update the **settings.json** file in [android-runtime/build-artifacts/project-template-gradle](https://github.com/NativeScript/android-runtime/tree/master/build-artifacts/project-template-gradle/settings.json)
+* Replace all the needed header and inspector files in the repo. The following [article](https://github.com/NativeScript/android-runtime/blob/master/docs/extending-inspector.md) might be helpful 
