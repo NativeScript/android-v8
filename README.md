@@ -1,5 +1,5 @@
 # android-v8
-Contains the Google's V8 build used in android runtime. The latest branch is [v6.6.346.23](https://github.com/NativeScript/android-v8/tree/darind/6.6.346.23)
+Contains the Google's V8 build used in android runtime.
 
 ### How to build (linux)
 
@@ -19,19 +19,19 @@ sudo apt-get install curl libc6-dev-i386 g++-multilib
 
 Mac OS:
 ```
-curl -O https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip
-unzip android-ndk-r16b-darwin-x86_64.zip -d ndkr16b
+curl -O https://dl.google.com/android/repository/android-ndk-r17b-darwin-x86_64.zip
+unzip android-ndk-r17b-darwin-x86_64.zip -d ndkr17b
 ```
 
 Linux:
 ```
-curl -O https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip
-unzip android-ndk-r16b-linux-x86_64.zip -d ndkr16b
+curl -O https://dl.google.com/android/repository/android-ndk-r17b-linux-x86_64.zip
+unzip android-ndk-r17b-linux-x86_64.zip -d ndkr17b
 ```
 
 * Export ANDROID_NDK_HOME environment variable
 ```
-export ANDROID_NDK_HOME=`pwd`/ndkr16b/android-ndk-r16b
+export ANDROID_NDK_HOME=`pwd`/ndkr17b/android-ndk-r17b
 ```
 
 * `fetch v8` (this will create a `v8` repo folder)
@@ -44,9 +44,9 @@ ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk
 ln -s $ANDROID_NDK_HOME third_party/android_ndk
 ```
 
-* checkout tag 6.6.346.23
+* checkout tag 6.7.288.46
 ```
-git checkout 6.6.346.23
+git checkout 6.7.288.46
 ```
 
 * Run sync
