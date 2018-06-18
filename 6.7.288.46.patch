@@ -1,8 +1,8 @@
 diff --git a/BUILD.gn b/BUILD.gn
-index 72a19b2..698a6b5 100644
+index 4b48f7d..6b12c99 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -332,7 +332,7 @@ config("toolchain") {
+@@ -347,7 +347,7 @@ config("toolchain") {
    visibility = [ ":*" ]  # Only targets in this file can depend on this.
  
    defines = []
@@ -11,7 +11,7 @@ index 72a19b2..698a6b5 100644
    ldflags = []
  
    if (v8_current_cpu == "arm") {
-@@ -1224,6 +1224,8 @@ v8_source_set("v8_base") {
+@@ -1325,6 +1325,8 @@ v8_source_set("v8_base") {
      "include/v8-util.h",
      "include/v8.h",
      "include/v8config.h",
@@ -278,10 +278,10 @@ index 0000000..864ee3c
 +}
 +
 diff --git a/src/api.cc b/src/api.cc
-index 8531cd5..4572619 100644
+index 8b177d0..b6b5ef4 100644
 --- a/src/api.cc
 +++ b/src/api.cc
-@@ -515,8 +515,22 @@ bool RunExtraCode(Isolate* isolate, Local<Context> context,
+@@ -506,8 +506,22 @@ bool RunExtraCode(Isolate* isolate, Local<Context> context,
    ScriptOrigin origin(resource_name);
    ScriptCompiler::Source source(source_string, origin);
    Local<Script> script;
@@ -307,16 +307,13 @@ index 8531cd5..4572619 100644
      i::PrintF("Executing custom snapshot script %s took %0.3f ms\n", name,
                timer.Elapsed().InMillisecondsF());
 diff --git a/src/inspector/inspector_protocol_config.json b/src/inspector/inspector_protocol_config.json
-index fdb2b64..2752d42 100644
+index fa07312..d7e2cef 100644
 --- a/src/inspector/inspector_protocol_config.json
 +++ b/src/inspector/inspector_protocol_config.json
 @@ -27,6 +27,27 @@
              },
              {
                  "domain": "HeapProfiler"
-+            },
-+            {
-+                "domain": "GenericTypes"
 +            },
 +            {
 +                "domain": "Page"
@@ -335,40 +332,20 @@ index fdb2b64..2752d42 100644
 +            },
 +            {
 +                "domain": "Log"
++            },
++            {
++                "domain": "Security"
              }
          ]
      },
 diff --git a/src/inspector/js_protocol.json b/src/inspector/js_protocol.json
-index a0f7fcd..ab1fff9 100644
+index eb8785d..e07ea13 100644
 --- a/src/inspector/js_protocol.json
 +++ b/src/inspector/js_protocol.json
-@@ -2961,6 +2961,6856 @@
+@@ -3005,6 +3005,6831 @@
                      ]
                  }
              ]
-+        },
-+        {
-+            "domain": "GenericTypes",
-+            "description": "Exposes generic types to be used by any domain.",
-+            "types": [
-+                {
-+                    "id": "SearchMatch",
-+                    "type": "object",
-+                    "description": "Search match in a resource.",
-+                    "properties": [
-+                        {
-+                            "name": "lineNumber",
-+                            "type": "number",
-+                            "description": "Line number in resource content."
-+                        },
-+                        {
-+                            "name": "lineContent",
-+                            "type": "string",
-+                            "description": "Line with match content."
-+                        }
-+                    ]
-+                }
-+            ]
 +        },
 +        {
 +            "domain": "Page",
@@ -1947,8 +1924,6 @@ index a0f7fcd..ab1fff9 100644
 +                }
 +            ]
 +        },
-+
-+
 +        {
 +            "domain": "Network",
 +            "description": "Network domain allows tracking network activities of the page. It exposes information about http,\nfile, data and other requests and responses, their headers, bodies, timing, etc.",
@@ -6794,7 +6769,7 @@ index a0f7fcd..ab1fff9 100644
 +                    ]
 +                }
 +            ]
-+        },        
++        },
 +        {
 +            "domain": "Log",
 +            "description": "Provides access to log entries.",
