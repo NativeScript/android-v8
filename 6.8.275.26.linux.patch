@@ -1,8 +1,8 @@
 diff --git a/BUILD.gn b/BUILD.gn
-index 4b48f7d..6b12c99 100644
+index 456a318..bac50b5 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -347,7 +347,7 @@ config("toolchain") {
+@@ -353,7 +353,7 @@ config("toolchain") {
    visibility = [ ":*" ]  # Only targets in this file can depend on this.
  
    defines = []
@@ -11,7 +11,7 @@ index 4b48f7d..6b12c99 100644
    ldflags = []
  
    if (v8_current_cpu == "arm") {
-@@ -1325,6 +1325,8 @@ v8_source_set("v8_base") {
+@@ -1442,6 +1442,8 @@ v8_source_set("v8_base") {
      "include/v8-util.h",
      "include/v8.h",
      "include/v8config.h",
@@ -22,10 +22,10 @@ index 4b48f7d..6b12c99 100644
      "src/address-map.cc",
 diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
 new file mode 100644
-index 0000000..090472d
+index 0000000..7f99244
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.cc
-@@ -0,0 +1,222 @@
+@@ -0,0 +1,210 @@
 +#include "V8NativeScriptExtension.h"
 +#include "objects-inl.h"
 +#include "api.h"
@@ -36,7 +36,6 @@ index 0000000..090472d
 +#include "assembler.h"
 +#include "keys.h"
 +#include <assert.h>
-+
 +
 +using namespace v8;
 +
@@ -103,7 +102,7 @@ index 0000000..090472d
 +}
 +
 +
-+uint8_t* NativeScriptExtension::GetAddress(const Local<Object>& obj)
++unsigned long NativeScriptExtension::GetAddress(const Local<Object>& obj)
 +{
 +	i::Handle<i::JSReceiver> h = Utils::OpenHandle(*obj);
 +
@@ -133,53 +132,43 @@ index 0000000..090472d
 +
 +	if ((cxt != nullptr) && (!cxt->IsNativeContext()))
 +	{
-+		i::JSFunction *closure = cxt->closure();
++		i::ScopeInfo *si = cxt->scope_info();
 +
-+		if (closure != nullptr)
++		if (si != nullptr)
 +		{
-+			i::SharedFunctionInfo *sharedFuncInfo = closure->shared();
++			int len = si->length();
 +
-+			if (sharedFuncInfo != nullptr)
++			for (int i = 0; i < len; i++)
 +			{
-+				i::ScopeInfo *si = sharedFuncInfo->scope_info();
++				i::Object *cur = si->get(i);
 +
-+				if (si != nullptr)
++				if ((cur != nullptr) && (cur->IsString()))
 +				{
-+					int len = si->length();
++					i::String *s = i::String::cast(cur);
 +
-+					for (int i = 0; i < len; i++)
++					i::Handle<i::String> name = i::Handle<i::String>(s, internal_isolate);
++
++					i::PropertyAttributes attr;
++					i::InitializationFlag init_flag; i::VariableMode var_mode;
++					int idx;
++
++					i::Handle<i::Object> o = cxt->Lookup(name, cxtFlags, &idx, &attr, &init_flag, &var_mode);
++
++					if (idx >= 0)
 +					{
-+						i::Object *cur = si->get(i);
++						i::Handle<i::Context> hndCxt = i::Handle<i::Context>::cast(o);
++						i::Handle<i::Object> obj = i::Handle<i::Object>(hndCxt->get(idx), internal_isolate);
 +
-+						if ((cur != nullptr) && (cur->IsString()))
++						if (!obj.is_null() && obj->IsObject())
 +						{
-+							i::String *s = i::String::cast(cur);
++							Local<Value> local = Utils::ToLocal(obj);
 +
-+							i::Handle<i::String> name = i::Handle<i::String>(s, internal_isolate);
-+
-+							i::PropertyAttributes attr;
-+							i::InitializationFlag init_flag; i::VariableMode var_mode;
-+							int idx;
-+
-+							i::Handle<i::Object> o = cxt->Lookup(name, cxtFlags, &idx, &attr, &init_flag, &var_mode);
-+
-+							if (idx >= 0)
-+							{
-+								i::Handle<i::Context> hndCxt = i::Handle<i::Context>::cast(o);
-+								i::Handle<i::Object> obj = i::Handle<i::Object>(hndCxt->get(idx), internal_isolate);
-+
-+								if (!obj.is_null() && obj->IsObject())
-+								{
-+									Local<Value> local = Utils::ToLocal(obj);
-+
-+									arr.push_back(local);
-+								}
-+							}
++							arr.push_back(local);
 +						}
-+					} // for
-+				} // si != nullptr
-+			} // sharedFuncInfo != nullptr
-+		} // closure != nullptr
++					}
++				}
++			} // for
++		} // si != nullptr
 +	}
 +
 +	*length = static_cast<int>(arr.size());
@@ -247,13 +236,12 @@ index 0000000..090472d
 +void NativeScriptExtension::CpuFeaturesProbe(bool cross_compile) {
 +	internal::CpuFeatures::Probe(cross_compile);
 +}
-+
 diff --git a/src/V8NativeScriptExtension.h b/src/V8NativeScriptExtension.h
 new file mode 100644
-index 0000000..864ee3c
+index 0000000..4fefc02
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.h
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,22 @@
 +#include "v8.h"
 +#include "handles.h"
 +
@@ -261,7 +249,7 @@ index 0000000..864ee3c
 +
 +	class NativeScriptExtension {
 +	public:
-+		static uint8_t* GetAddress(const v8::Local<v8::Object>& obj);
++		static unsigned long GetAddress(const v8::Local<v8::Object>& obj);
 +
 +		static v8::Local<v8::Value>* GetClosureObjects(v8::Isolate *isolate, const v8::Local<v8::Function>& func, int *length);
 +
@@ -271,17 +259,16 @@ index 0000000..864ee3c
 +
 +		static v8::Local<v8::Array> GetPropertyKeys(v8::Isolate *isolate, const v8::Local<v8::Context>& context, const v8::Local<v8::Object>& object, bool& success);
 +
-+                static void CpuFeaturesProbe(bool cross_compile);
++		static void CpuFeaturesProbe(bool cross_compile);
 +	private:
 +		NativeScriptExtension();
 +	};
 +}
-+
 diff --git a/src/api.cc b/src/api.cc
-index 8b177d0..b6b5ef4 100644
+index 89bcb2e..21f75a3 100644
 --- a/src/api.cc
 +++ b/src/api.cc
-@@ -506,8 +506,22 @@ bool RunExtraCode(Isolate* isolate, Local<Context> context,
+@@ -524,8 +524,22 @@ bool RunExtraCode(Isolate* isolate, Local<Context> context,
    ScriptOrigin origin(resource_name);
    ScriptCompiler::Source source(source_string, origin);
    Local<Script> script;
@@ -339,10 +326,10 @@ index fa07312..d7e2cef 100644
          ]
      },
 diff --git a/src/inspector/js_protocol.json b/src/inspector/js_protocol.json
-index eb8785d..e07ea13 100644
+index dc47384..e372975 100644
 --- a/src/inspector/js_protocol.json
 +++ b/src/inspector/js_protocol.json
-@@ -3005,6 +3005,6831 @@
+@@ -3049,6 +3049,6831 @@
                      ]
                  }
              ]

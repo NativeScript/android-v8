@@ -15,7 +15,7 @@ export PATH=`pwd`/depot_tools:"$PATH"
 sudo apt-get install curl libc6-dev-i386 g++-multilib
 ```
 
-* Download and extract Android NDK 16b
+* Download and extract Android NDK 17b
 
 Mac OS:
 ```
@@ -44,9 +44,9 @@ ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk
 ln -s $ANDROID_NDK_HOME third_party/android_ndk
 ```
 
-* checkout tag 6.7.288.46
+* checkout tag 6.8.275.26
 ```
-git checkout 6.7.288.46
+git checkout 6.8.275.26
 ```
 
 * Run sync
