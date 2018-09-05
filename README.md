@@ -44,9 +44,9 @@ ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk
 ln -s $ANDROID_NDK_HOME third_party/android_ndk
 ```
 
-* checkout tag 6.8.275.26
+* checkout tag 6.9.427.19
 ```
-git checkout 6.8.275.26
+git checkout 6.9.427.19
 ```
 
 * Run sync
