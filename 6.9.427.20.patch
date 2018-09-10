@@ -22,10 +22,10 @@ index 1e31acb..1c7c170 100644
      "src/address-map.cc",
 diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
 new file mode 100644
-index 0000000..0f402ab
+index 0000000..6d67650
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.cc
-@@ -0,0 +1,211 @@
+@@ -0,0 +1,212 @@
 +#include "V8NativeScriptExtension.h"
 +#include "objects-inl.h"
 +#include "api.h"
@@ -189,19 +189,19 @@ index 0000000..0f402ab
 +	i::Handle<i::String> intname = Utils::OpenHandle(*propName);
 +
 +	//Isolate* isolate = object->GetIsolate();
-+	auto internalIsolate = o->GetIsolate();
++	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
 +
-+	internal::LookupIterator it(internalIsolate, o, intname, internal::LookupIterator::OWN);
++	internal::LookupIterator it(internal_isolate, o, intname, internal::LookupIterator::OWN);
 +	i::Handle<i::Object> maybe_pair = it.GetAccessors();
 +
 +	// if (maybe_pair->IsAccessorPair()) {
-+		i::MaybeHandle<i::Object> g = internal::AccessorPair::GetComponent(internalIsolate, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_GETTER);
++		i::MaybeHandle<i::Object> g = internal::AccessorPair::GetComponent(internal_isolate, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_GETTER);
 +		if (!g.is_null())
 +		{
 +			getter = Utils::ToLocal(g.ToHandleChecked());
 +		}
 +
-+		i::MaybeHandle<i::Object> s = internal::AccessorPair::GetComponent(internalIsolate, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_SETTER);
++		i::MaybeHandle<i::Object> s = internal::AccessorPair::GetComponent(internal_isolate, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_SETTER);
 +		if (!s.is_null())
 +		{
 +			setter = Utils::ToLocal(s.ToHandleChecked());
@@ -237,14 +237,14 @@ index 0000000..0f402ab
 +void NativeScriptExtension::CpuFeaturesProbe(bool cross_compile) {
 +	internal::CpuFeatures::Probe(cross_compile);
 +}
++
 diff --git a/src/V8NativeScriptExtension.h b/src/V8NativeScriptExtension.h
 new file mode 100644
-index 0000000..4fefc02
+index 0000000..c7954f4
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.h
 @@ -0,0 +1,22 @@
 +#include "v8.h"
-+#include "handles.h"
 +
 +namespace v8 {
 +
@@ -265,6 +265,7 @@ index 0000000..4fefc02
 +		NativeScriptExtension();
 +	};
 +}
++
 diff --git a/src/api.cc b/src/api.cc
 index 7c569e3..409bcb9 100644
 --- a/src/api.cc
