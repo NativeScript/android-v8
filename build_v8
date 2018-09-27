@@ -1,29 +1,29 @@
-
 #!/bin/bash
 
 ## prepare configuration
 
 case "$(uname -s)" in
 
-   Darwin)
-     echo 'Mac OS X'
-	 NDK_BUILD_TOOLS_ARR=($ANDROID_NDK_HOME/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/arm-linux-androideabi/bin \
-		$ANDROID_NDK_HOME/toolchains/aarch64-linux-android-4.9/prebuilt/darwin-x86_64/aarch64-linux-android/bin \
-		$ANDROID_NDK_HOME/toolchains/x86-4.9/prebuilt/darwin-x86_64/i686-linux-android/bin \
-		$ANDROID_NDK_HOME/toolchains/x86_64-4.9/prebuilt/darwin-x86_64/x86_64-linux-android/bin)
-     ;;
+	Darwin)
+		echo 'Mac OS X'
+		cp ./llvm-ar ./v8/third_party/llvm-build/Release+Asserts/bin
+		NDK_BUILD_TOOLS_ARR=($ANDROID_NDK_HOME/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/arm-linux-androideabi/bin \
+			$ANDROID_NDK_HOME/toolchains/aarch64-linux-android-4.9/prebuilt/darwin-x86_64/aarch64-linux-android/bin \
+			$ANDROID_NDK_HOME/toolchains/x86-4.9/prebuilt/darwin-x86_64/i686-linux-android/bin \
+			$ANDROID_NDK_HOME/toolchains/x86_64-4.9/prebuilt/darwin-x86_64/x86_64-linux-android/bin)
+		;;
 
-   Linux)
-     echo 'Linux'
-	 NDK_BUILD_TOOLS_ARR=($ANDROID_NDK_HOME/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/arm-linux-androideabi/bin \
-		$ANDROID_NDK_HOME/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/aarch64-linux-android/bin \
-		$ANDROID_NDK_HOME/toolchains/x86-4.9/prebuilt/linux-x86_64/i686-linux-android/bin \
-		$ANDROID_NDK_HOME/toolchains/x86_64-4.9/prebuilt/linux-x86_64/x86_64-linux-android/bin)
-     ;;
+	Linux)
+		echo 'Linux'
+		NDK_BUILD_TOOLS_ARR=($ANDROID_NDK_HOME/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/arm-linux-androideabi/bin \
+			$ANDROID_NDK_HOME/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/aarch64-linux-android/bin \
+			$ANDROID_NDK_HOME/toolchains/x86-4.9/prebuilt/linux-x86_64/i686-linux-android/bin \
+			$ANDROID_NDK_HOME/toolchains/x86_64-4.9/prebuilt/linux-x86_64/x86_64-linux-android/bin)
+		;;
 
-   *)
-     echo 'Unsupported OS'
-     ;;
+	*)
+	echo 'Unsupported OS'
+	;;
 esac
 
 # The order of CPU architectures in this array must be the same
