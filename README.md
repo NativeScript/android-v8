@@ -15,23 +15,23 @@ export PATH=`pwd`/depot_tools:"$PATH"
 sudo apt-get install curl libc6-dev-i386 g++-multilib
 ```
 
-* Download and extract Android NDK 17c
+* Download and extract Android NDK 18b
 
 Mac OS:
 ```
-curl -O https://dl.google.com/android/repository/android-ndk-r17c-darwin-x86_64.zip
-unzip android-ndk-r17c-darwin-x86_64.zip -d ndkr17c
+curl -O https://dl.google.com/android/repository/android-ndk-r18b-darwin-x86_64.zip
+unzip android-ndk-r18b-darwin-x86_64.zip -d ndkr18b
 ```
 
 Linux:
 ```
-curl -O https://dl.google.com/android/repository/android-ndk-r17c-linux-x86_64.zip
-unzip android-ndk-r17c-linux-x86_64.zip -d ndkr17c
+curl -O https://dl.google.com/android/repository/android-ndk-r18b-linux-x86_64.zip
+unzip android-ndk-r18b-linux-x86_64.zip -d ndkr18b
 ```
 
 * Export ANDROID_NDK_HOME environment variable
 ```
-export ANDROID_NDK_HOME=`pwd`/ndkr17c/android-ndk-r17c
+export ANDROID_NDK_HOME=`pwd`/ndkr18b/android-ndk-r18b
 ```
 
 * `fetch v8` (this will create a `v8` repo folder)
@@ -44,9 +44,9 @@ ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk
 ln -s $ANDROID_NDK_HOME third_party/android_ndk
 ```
 
-* checkout tag 6.9.427.23
+* checkout tag 7.1.302.31
 ```
-git checkout 6.9.427.23
+git checkout 7.1.302.31
 ```
 
 * Run sync
