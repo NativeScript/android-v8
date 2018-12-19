@@ -44,9 +44,9 @@ ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk
 ln -s $ANDROID_NDK_HOME third_party/android_ndk
 ```
 
-* checkout tag 7.1.302.31
+* checkout tag 7.1.302.32
 ```
-git checkout 7.1.302.31
+git checkout 7.1.302.32
 ```
 
 * Run sync
