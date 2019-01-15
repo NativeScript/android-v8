@@ -22,7 +22,7 @@ Mac OS:
 curl -O https://dl.google.com/android/repository/android-ndk-r18b-darwin-x86_64.zip
 unzip android-ndk-r18b-darwin-x86_64.zip -d ndkr18b
 ```
->> You need to use XCode < 10 to be able to build v8
+> You need to use XCode < 10 to be able to build v8
 
 Linux:
 ```
