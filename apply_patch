@@ -1,6 +1,6 @@
 #!/bin/bash
 
 cd v8
-git apply --cached ../6.9.427.23.patch
+git apply --cached ../7.1.302.32.patch
 git checkout .
 git commit -m "NativeScript patch"
