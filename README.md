@@ -22,6 +22,7 @@ Mac OS:
 curl -O https://dl.google.com/android/repository/android-ndk-r18b-darwin-x86_64.zip
 unzip android-ndk-r18b-darwin-x86_64.zip -d ndkr18b
 ```
+>> You need to use XCode < 10 to be able to build v8
 
 Linux:
 ```
@@ -61,7 +62,8 @@ gclient sync
 
 * run the following command in the root folder command
 ```
-../build_v8
+cd ..
+./build_v8
 ```
 > you can run: `../build_v8 debug` if you want to build v8 in debug, by default it's built in release.
 
@@ -78,4 +80,4 @@ git diff 04a2 b36f > patch.diff
 * Copy the files from the **v8/dist** folder in the corresponding folder in [android-runtime](https://github.com/NativeScript/android-runtime/tree/master/test-app/runtime/src/main/libs)
 * Update the **v8-versions.json** file in the [android-runtime root folder](https://github.com/NativeScript/android-runtime/blob/master/v8-versions.json)
 * Update the **settings.json** file in [android-runtime/build-artifacts/project-template-gradle](https://github.com/NativeScript/android-runtime/tree/master/build-artifacts/project-template-gradle/settings.json)
-* Replace all the needed header and inspector files in the repo. The following [article](https://github.com/NativeScript/android-runtime/blob/master/docs/extending-inspector.md) might be helpful 
+* Replace all the needed header and inspector files in the repo. The following [article](https://github.com/NativeScript/android-runtime/blob/master/docs/extending-inspector.md) might be helpful
