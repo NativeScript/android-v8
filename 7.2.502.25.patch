@@ -1,9 +1,9 @@
 diff --git a/BUILD.gn b/BUILD.gn
-index 83f1fdb..2f3fe6d 100644
+index 3c03942..7102d1a 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -1535,6 +1535,8 @@ v8_source_set("v8_base") {
-     "include/v8-util.h",
+@@ -1622,6 +1622,8 @@ v8_source_set("v8_base") {
+     "include/v8-wasm-trap-handler-posix.h",
      "include/v8.h",
      "include/v8config.h",
 +    "src/V8NativeScriptExtension.h",
@@ -13,7 +13,7 @@ index 83f1fdb..2f3fe6d 100644
      "src/address-map.cc",
 diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
 new file mode 100644
-index 0000000..7a49c4f
+index 0000000..520ac67
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.cc
 @@ -0,0 +1,213 @@
@@ -117,13 +117,13 @@ index 0000000..7a49c4f
 +
 +	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
 +
-+	i::Context *cxt = f->context();
++	v8::internal::Context cxt = f->context();
 +
 +	i::ContextLookupFlags cxtFlags = i::FOLLOW_CHAINS;
 +
 +	if (cxt != nullptr && !cxt->IsNativeContext())
 +	{
-+		i::ScopeInfo *si = cxt->scope_info();
++		v8::internal::ScopeInfo si = cxt->scope_info();
 +
 +		if (si != nullptr && si->HasContext())
 +		{
@@ -135,7 +135,7 @@ index 0000000..7a49c4f
 +
 +				if (cur != nullptr && cur->IsString())
 +				{
-+					i::String *s = i::String::cast(cur);
++					v8::internal::String s = i::String::cast(cur);
 +
 +					i::Handle<i::String> name = i::Handle<i::String>(s, internal_isolate);
 +
@@ -292,10 +292,10 @@ index fa07312..d7e2cef 100644
          ]
      },
 diff --git a/src/inspector/js_protocol.json b/src/inspector/js_protocol.json
-index 23f8875..d64590b 100644
+index db6ea65..21b9afd 100644
 --- a/src/inspector/js_protocol.json
 +++ b/src/inspector/js_protocol.json
-@@ -3118,6 +3118,6831 @@
+@@ -3144,6 +3144,6831 @@
                      ]
                  }
              ]

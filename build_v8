@@ -6,7 +6,6 @@ case "$(uname -s)" in
 
    Darwin)
      echo 'Mac OS X'
-     cp ./llvm-ar ./v8/third_party/llvm-build/Release+Asserts/bin
 	 NDK_BUILD_TOOLS_ARR=(
 		$ANDROID_NDK_HOME/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/arm-linux-androideabi/bin \
 		$ANDROID_NDK_HOME/toolchains/aarch64-linux-android-4.9/prebuilt/darwin-x86_64/aarch64-linux-android/bin \
@@ -31,6 +30,7 @@ esac
 # The order of CPU architectures in this array must be the same
 # as the order of NDK tools in the NDK_BUILD_TOOLS_ARR array
 ARCH_ARR=(arm arm64 x86)
+#ARCH_ARR=(arm)
 
 BUILD_DIR_PREFIX="outgn"
 
@@ -45,9 +45,9 @@ for CURRENT_ARCH in ${ARCH_ARR[@]}
 do
 	ARGS=
 	if [[ $BUILD_TYPE == "debug" ]] ;then
-		gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="v8_use_snapshot=true v8_use_external_startup_data=false is_debug=true symbol_level=2 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=true"
+                gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="v8_use_snapshot=true v8_use_external_startup_data=true v8_enable_embedded_builtins=true is_debug=true symbol_level=2 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false"
 	else
-		gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="v8_enable_embedded_builtins=false v8_use_snapshot=true v8_use_external_startup_data=false is_official_build=true use_thin_lto=false is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=true"
+		gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="v8_use_snapshot=true v8_use_external_startup_data=true v8_enable_embedded_builtins=true is_official_build=true use_thin_lto=false is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false"
 	fi
 done
 
@@ -56,7 +56,7 @@ COUNT=0
 for CURRENT_ARCH in ${ARCH_ARR[@]}
 do
 	# make fat build
-	V8_FOLDERS=(v8_base v8_libplatform v8_libbase v8_libsampler v8_snapshot v8_initializers v8_init)
+        V8_FOLDERS=(v8_base v8_libplatform v8_libbase v8_libsampler v8_external_snapshot v8_initializers v8_init)
 
 	SECONDS=0
 	ninja -C $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE ${V8_FOLDERS[@]} inspector
@@ -70,34 +70,30 @@ do
 	V8_FOLDERS_LEN=${#V8_FOLDERS[@]}
 	for CURRENT_V8_FOLDER in ${V8_FOLDERS[@]}
 	do
-		LAST_PARAM=${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/${CURRENT_V8_FOLDER}/*.o
-		eval $CURRENT_BUILD_TOOL/ar r $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/$CURRENT_V8_FOLDER/lib$CURRENT_V8_FOLDER.a "${LAST_PARAM}"
-		mv $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/$CURRENT_V8_FOLDER/lib$CURRENT_V8_FOLDER.a $DIST/$CURRENT_ARCH-$BUILD_TYPE
+               LAST_PARAM=${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/${CURRENT_V8_FOLDER}/*.o
+               eval $CURRENT_BUILD_TOOL/ar r $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/$CURRENT_V8_FOLDER/lib$CURRENT_V8_FOLDER.a "${LAST_PARAM}"
+               mv $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/$CURRENT_V8_FOLDER/lib$CURRENT_V8_FOLDER.a $DIST/$CURRENT_ARCH-$BUILD_TYPE
 	done
-done
 
-echo "=================================="
-echo "=================================="
-echo " Now generating snapshot binaries "
-echo "=================================="
-echo "=================================="
-# generate mksnapshot tools
-for CURRENT_ARCH in ${ARCH_ARR[@]}
-	do
-		ninja -C $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE ${V8_FOLDERS[@]} run_mksnapshot_default
-		echo "built snapshot for $CURRENT_ARCH"
+	echo "Copying snapshot binaries for $CURRENT_ARCH"
+	DIST="./dist/snapshots/$CURRENT_ARCH-$BUILD_TYPE/"
+	mkdir -p $DIST
+        SOURCE_DIR=
+        if [[ $CURRENT_ARCH == "arm64" ]] ;then
+                SOURCE_DIR=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/clang_x64_v8_$CURRENT_ARCH
+        elif [[ $CURRENT_ARCH == "arm" ]] ;then
+                SOURCE_DIR=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/clang_x86_v8_$CURRENT_ARCH
+        elif [[ $CURRENT_ARCH == "x86" ]] ;then
+                SOURCE_DIR=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/clang_x86
+        fi
 
-		DIST="./dist/snapshots/$CURRENT_ARCH-$BUILD_TYPE/"
-		mkdir -p $DIST
+        cp -r $SOURCE_DIR/mksnapshot $DIST
 
-		SOURCE_DIR=
-		if [[ $CURRENT_ARCH == "arm64" ]] ;then
-			SOURCE_DIR=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/clang_x64_v8_$CURRENT_ARCH/mksnapshot
-		elif [[ $CURRENT_ARCH == "arm" ]] ;then
-			SOURCE_DIR=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/clang_x86_v8_$CURRENT_ARCH/mksnapshot
-		elif [[ $CURRENT_ARCH == "x86" ]] ;then
-			SOURCE_DIR=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/clang_x86/mksnapshot
-		fi
-
-		cp -r $SOURCE_DIR $DIST
+	echo "Preparing snapshot headers for $CURRENT_ARCH"
+	INCLUDE="$(pwd)/dist/$CURRENT_ARCH-$BUILD_TYPE/include"
+	mkdir -p $INCLUDE
+        pushd $SOURCE_DIR/..
+	xxd -i snapshot_blob.bin > $INCLUDE/snapshot_blob.h
+        xxd -i natives_blob.bin > $INCLUDE/natives_blob.h
+	popd
 done
