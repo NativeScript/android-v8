@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #check v8 tag exists
-(git ls-remote -t --exit-code v8 refs/tags/$1; 
-if [ $? -ne 0 ] 
+(git ls-remote -t --exit-code v8 refs/tags/$1;
+if [ $? -ne 0 ]
 then
  echo  "v8 tag not found"
  exit -1
