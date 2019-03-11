@@ -15,24 +15,24 @@ export PATH=`pwd`/depot_tools:"$PATH"
 sudo apt-get install curl libc6-dev-i386 g++-multilib
 ```
 
-* Download and extract Android NDK 19
+* Download and extract Android NDK 19b
 
 Mac OS:
 ```
-curl -O https://dl.google.com/android/repository/android-ndk-r19-darwin-x86_64.zip
-unzip android-ndk-r19-darwin-x86_64.zip -d ndkr19
+curl -O https://dl.google.com/android/repository/android-ndk-r19b-darwin-x86_64.zip
+unzip android-ndk-r19b-darwin-x86_64.zip -d ndkr19b
 ```
 > You need to use XCode < 10 to be able to build v8
 
 Linux:
 ```
-curl -O https://dl.google.com/android/repository/android-ndk-r19-linux-x86_64.zip
-unzip android-ndk-r19-linux-x86_64.zip -d ndkr19
+curl -O https://dl.google.com/android/repository/android-ndk-r19b-linux-x86_64.zip
+unzip android-ndk-r19b-linux-x86_64.zip -d ndkr19b
 ```
 
 * Export ANDROID_NDK_HOME environment variable
 ```
-export ANDROID_NDK_HOME=`pwd`/ndkr19/android-ndk-r19
+export ANDROID_NDK_HOME=`pwd`/ndkr19b/android-ndk-r19b
 ```
 
 * `fetch v8` (this will create a `v8` repo folder)
@@ -45,9 +45,9 @@ ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk
 ln -s $ANDROID_NDK_HOME third_party/android_ndk
 ```
 
-* checkout tag 7.2.502.25
+* checkout tag 7.2.502.28
 ```
-git checkout 7.2.502.25
+git checkout 7.2.502.28
 ```
 
 * Run sync
