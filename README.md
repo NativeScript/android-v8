@@ -45,9 +45,9 @@ ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk
 ln -s $ANDROID_NDK_HOME third_party/android_ndk
 ```
 
-* checkout tag 7.2.502.28
+* checkout tag 7.3.492.25
 ```
-git checkout 7.2.502.28
+git checkout 7.3.492.25
 ```
 
 * Run sync
@@ -57,13 +57,14 @@ gclient sync
 
 * Apply patch running the following command
 ```
-../apply_patch
+cd ..
+./apply_patch.sh
 ```
 
 * run the following command in the root folder command
 ```
 cd ..
-./build_v8
+./build.sh
 ```
 > you can run: `../build_v8 debug` if you want to build v8 in debug, by default it's built in release.
 
@@ -73,11 +74,12 @@ The output folder is called `dist` and it's created at `v8` root level.
 
 ### HOW TO CREATE A NEW PATCH file
 
-git diff 04a2 b36f > patch.diff
+git diff --cached > patch.diff
 
 ### What to do next
 
 * Copy the files from the **v8/dist** folder in the corresponding folder in [android-runtime](https://github.com/NativeScript/android-runtime/tree/master/test-app/runtime/src/main/libs)
+* Copy the files from the **v8/buildtools/third_party/libc++/trunk/include** (libc++) into [android-runtime/test-app/runtime/src/main/cpp/include/libc++](https://github.com/NativeScript/android-runtime/tree/master/test-app/runtime/src/main/cpp/include/libc++)
 * Update the **v8-versions.json** file in the [android-runtime root folder](https://github.com/NativeScript/android-runtime/blob/master/v8-versions.json)
 * Update the **settings.json** file in [android-runtime/build-artifacts/project-template-gradle](https://github.com/NativeScript/android-runtime/tree/master/build-artifacts/project-template-gradle/settings.json)
 * Replace all the needed header and inspector files in the repo. The following [article](https://github.com/NativeScript/android-runtime/blob/master/docs/extending-inspector.md) might be helpful

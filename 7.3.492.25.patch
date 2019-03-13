@@ -1,8 +1,8 @@
 diff --git a/BUILD.gn b/BUILD.gn
-index 3c03942827..7102d1ab33 100644
+index 16e0b60ca7..ebf0d6cc81 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -1622,6 +1622,8 @@ v8_source_set("v8_base") {
+@@ -1515,6 +1515,8 @@ v8_source_set("v8_base") {
      "include/v8-wasm-trap-handler-posix.h",
      "include/v8.h",
      "include/v8config.h",
@@ -13,10 +13,10 @@ index 3c03942827..7102d1ab33 100644
      "src/address-map.cc",
 diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
 new file mode 100644
-index 0000000000..063563ba0a
+index 0000000000..14dccff326
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.cc
-@@ -0,0 +1,212 @@
+@@ -0,0 +1,214 @@
 +#include "V8NativeScriptExtension.h"
 +#include "objects-inl.h"
 +#include "api-inl.h"
@@ -121,19 +121,19 @@ index 0000000000..063563ba0a
 +
 +	i::ContextLookupFlags cxtFlags = i::FOLLOW_CHAINS;
 +
-+	if (cxt != nullptr && !cxt->IsNativeContext())
++	if (!cxt.is_null() && !cxt->IsNativeContext())
 +	{
 +		v8::internal::ScopeInfo si = cxt->scope_info();
 +
-+		if (si != nullptr && si->HasContext())
++		if (!si.is_null() && si->HasContext())
 +		{
 +			int len = si->length();
 +
 +			for (int i = 0; i < len; i++)
 +			{
-+				i::Object *cur = si->get(i);
++				v8::internal::Object cur = si->get(i);
 +
-+				if (cur != nullptr && cur->IsString())
++				if (!cur.IsNullOrUndefined() && cur->IsString())
 +				{
 +					v8::internal::String s = i::String::cast(cur);
 +
@@ -144,7 +144,8 @@ index 0000000000..063563ba0a
 +					i::VariableMode var_mode;
 +					int idx;
 +
-+					i::Handle<i::Object> o = cxt->Lookup(name, cxtFlags, &idx, &attr, &init_flag, &var_mode);
++                                        i::Handle<v8::internal::Context> cxtHandle = i::Handle<v8::internal::Context>(cxt, internal_isolate);
++					i::Handle<i::Object> o = v8::internal::Context::Lookup(cxtHandle, name, cxtFlags, &idx, &attr, &init_flag, &var_mode);
 +
 +					if (idx >= 0)
 +					{
@@ -229,6 +230,7 @@ index 0000000000..063563ba0a
 +void NativeScriptExtension::CpuFeaturesProbe(bool cross_compile) {
 +	i::CpuFeatures::Probe(cross_compile);
 +}
++
 diff --git a/src/V8NativeScriptExtension.h b/src/V8NativeScriptExtension.h
 new file mode 100644
 index 0000000000..1111215d6d
@@ -259,10 +261,10 @@ index 0000000000..1111215d6d
 +}
 +
 diff --git a/src/inspector/inspector_protocol_config.json b/src/inspector/inspector_protocol_config.json
-index fa073128b3..d7e2cefec6 100644
+index 82927b44e6..77ffc7c550 100644
 --- a/src/inspector/inspector_protocol_config.json
 +++ b/src/inspector/inspector_protocol_config.json
-@@ -27,6 +27,27 @@
+@@ -26,6 +26,27 @@
              },
              {
                  "domain": "HeapProfiler"
@@ -291,10 +293,10 @@ index fa073128b3..d7e2cefec6 100644
          ]
      },
 diff --git a/src/inspector/js_protocol.json b/src/inspector/js_protocol.json
-index db6ea65af7..21b9afd212 100644
+index ea6c995088..41fb0ff4ff 100644
 --- a/src/inspector/js_protocol.json
 +++ b/src/inspector/js_protocol.json
-@@ -3144,6 +3144,6831 @@
+@@ -3139,6 +3139,6831 @@
                      ]
                  }
              ]
