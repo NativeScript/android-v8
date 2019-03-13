@@ -1,6 +1,0 @@
-#!/bin/bash
-
-cd v8
-git apply --cached ../7.2.502.25.patch
-git checkout .
-git commit -m "NativeScript patch"

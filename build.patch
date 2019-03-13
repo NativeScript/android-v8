@@ -1,0 +1,16 @@
+diff --git a/config/android/BUILD.gn b/config/android/BUILD.gn
+index b69d42b70..7a6c15d1b 100644
+--- a/config/android/BUILD.gn
++++ b/config/android/BUILD.gn
+@@ -117,7 +117,9 @@ config("runtime_library") {
+   lib_dirs = [ android_libcpp_lib_dir ]
+ 
+   libs = []
+-  libs += [ "android_support" ]
++  if (current_cpu != "arm64") {
++    libs += [ "android_support" ]
++  }
+ 
+   # arm builds of libc++ starting in NDK r12 depend on unwind.
+   if (current_cpu == "arm") {
+
