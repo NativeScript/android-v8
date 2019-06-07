@@ -1,8 +1,8 @@
 diff --git a/BUILD.gn b/BUILD.gn
-index fddd525297..730127a7ec 100644
+index 10fee26420..ba472209e8 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -1606,6 +1606,8 @@ v8_source_set("v8_base") {
+@@ -1958,6 +1958,8 @@ v8_source_set("v8_base_without_compiler") {
      "include/v8-wasm-trap-handler-posix.h",
      "include/v8.h",
      "include/v8config.h",
@@ -259,7 +259,7 @@ index 0000000000..c8634677ac
 +	};
 +}
 diff --git a/src/inspector/inspector_protocol_config.json b/src/inspector/inspector_protocol_config.json
-index c4aa29ce99..3fbe51337b 100644
+index c4aa29ce99..299cfbe24a 100644
 --- a/src/inspector/inspector_protocol_config.json
 +++ b/src/inspector/inspector_protocol_config.json
 @@ -26,6 +26,37 @@
@@ -269,14 +269,14 @@ index c4aa29ce99..3fbe51337b 100644
 +            },
 +            {
 +                "domain": "Page",
-+		"exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
++                "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
 +                            "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot"],
 +                "async": ["getResourceContent", "searchInResource"],
 +                "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
 +            },
 +            {
 +                "domain": "Network",
-+		"exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions",
++                "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions",
 +                            "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception",
 +                            "takeResponseBodyForInterceptionAsStream"],
 +                "async": ["getResponseBody", "getRequestPostData"]
@@ -286,7 +286,7 @@ index c4aa29ce99..3fbe51337b 100644
 +            },
 +            {
 +                "domain": "CSS",
-+		"async": ["enable"]
++                "async": ["enable"]
 +            },
 +            {
 +                "domain": "Overlay"
@@ -296,18 +296,19 @@ index c4aa29ce99..3fbe51337b 100644
 +            },
 +            {
 +                "domain": "Security",
-+		"include": []
++                "include": []
              }
          ]
      },
 diff --git a/src/inspector/js_protocol.pdl b/src/inspector/js_protocol.pdl
-index 93c988ea30..f4e5262466 100644
+index e4715f47ef..e588be7051 100644
 --- a/src/inspector/js_protocol.pdl
 +++ b/src/inspector/js_protocol.pdl
-@@ -1462,3 +1462,3107 @@ deprecated domain Schema
+@@ -1478,3 +1478,3108 @@ deprecated domain Schema
      returns
        # List of supported domains.
        array of Domain domains
++
 +
 +# Actions and events related to the inspected page belong to the page domain.
 +domain Page
