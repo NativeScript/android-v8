@@ -1,31 +1,31 @@
 diff --git a/BUILD.gn b/BUILD.gn
-index 10fee26420..ba472209e8 100644
+index 8640517ae5..2e140a9107 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -1958,6 +1958,8 @@ v8_source_set("v8_base_without_compiler") {
+@@ -2008,6 +2008,8 @@ v8_source_set("v8_base_without_compiler") {
      "include/v8-wasm-trap-handler-posix.h",
      "include/v8.h",
      "include/v8config.h",
 +    "src/V8NativeScriptExtension.h",
 +    "src/V8NativeScriptExtension.cc",
-     "src/accessors.cc",
-     "src/accessors.h",
-     "src/address-map.cc",
+     "src/api/api-arguments-inl.h",
+     "src/api/api-arguments.cc",
+     "src/api/api-arguments.h",
 diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
 new file mode 100644
-index 0000000000..bffc3dbd9c
+index 0000000000..2d9e1401dc
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.cc
-@@ -0,0 +1,213 @@
+@@ -0,0 +1,212 @@
 +#include "V8NativeScriptExtension.h"
-+#include "objects-inl.h"
-+#include "api-inl.h"
-+#include "checks.h"
-+#include "contexts.h"
-+#include "globals.h"
-+#include "handles.h"
-+#include "assembler.h"
-+#include "keys.h"
++#include "objects/objects-inl.h"
++#include "objects/contexts.h"
++#include "objects/keys.h"
++#include "api/api-inl.h"
++#include "common/checks.h"
++#include "common/globals.h"
++#include "handles/handles.h"
++#include "codegen/assembler.h"
 +#include <assert.h>
 +
 +using namespace v8;
@@ -121,19 +121,19 @@ index 0000000000..bffc3dbd9c
 +
 +	i::ContextLookupFlags cxtFlags = i::FOLLOW_CHAINS;
 +
-+	if (!cxt.is_null() && !cxt->IsNativeContext())
++	if (!cxt.is_null() && !cxt.IsNativeContext())
 +	{
-+		v8::internal::ScopeInfo si = cxt->scope_info();
++		v8::internal::ScopeInfo si = cxt.scope_info();
 +
-+		if (!si.is_null() && si->HasContext())
++		if (!si.is_null() && si.HasContext())
 +		{
-+			int len = si->length();
++			int len = si.length();
 +
 +			for (int i = 0; i < len; i++)
 +			{
-+				v8::internal::Object cur = si->get(i);
++				v8::internal::Object cur = si.get(i);
 +
-+				if (!cur.IsNullOrUndefined() && cur->IsString())
++				if (!cur.IsNullOrUndefined() && cur.IsString())
 +				{
 +					v8::internal::String s = i::String::cast(cur);
 +
@@ -203,25 +203,24 @@ index 0000000000..bffc3dbd9c
 +}
 +
 +
-+Local<Array> NativeScriptExtension::GetPropertyKeys(Isolate* isolate, const Local<Context>& context, const Local<Object>& object, bool& success)
++std::vector<Local<Value>> NativeScriptExtension::GetPropertyKeys(Isolate* isolate, const Local<Object>& object)
 +{
-+	success = true;
-+
 +	i::Handle<i::JSObject> obj = i::Handle<i::JSObject>::cast(Utils::OpenHandle(*object));
 +	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
-+	// i::Object* internal_object = reinterpret_cast<i::Object*>(Utils::OpenHandle(*object));
 +
 +	i::Handle<i::FixedArray> arr = i::KeyAccumulator::GetOwnEnumPropertyKeys(internal_isolate, obj);
 +
 +	int len = arr->length();
 +
-+	Local<Array> keys = Array::New(isolate, len);
++	std::vector<Local<Value>> keys(len);
 +	for (int i = 0; i < len; i++)
 +	{
 +		i::Handle<i::Object> elem = i::Handle<i::Object>(arr->get(i), obj->GetIsolate());
 +		Local<Value> val = Utils::ToLocal(elem);
-+		Maybe<bool> res = keys->Set(context, i, val);
-+		success &= (res.IsJust() && res.FromJust());
++                if (!val.IsEmpty())
++                {
++                        keys.push_back(val);
++                }
 +	}
 +
 +	return keys;
@@ -232,12 +231,13 @@ index 0000000000..bffc3dbd9c
 +}
 diff --git a/src/V8NativeScriptExtension.h b/src/V8NativeScriptExtension.h
 new file mode 100644
-index 0000000000..c8634677ac
+index 0000000000..1bb4fc36e0
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.h
-@@ -0,0 +1,22 @@
-+#include "v8.h"
-+#include "api.h"
+@@ -0,0 +1,23 @@
++#include <vector>
++#include "init/v8.h"
++#include "api/api.h"
 +
 +namespace v8 {
 +
@@ -251,7 +251,7 @@ index 0000000000..c8634677ac
 +
 +		static void GetAssessorPair(v8::Isolate* isolate, const v8::Local<v8::Object>& obj, const v8::Local<v8::String>& propName, v8::Local<v8::Value>& getter, v8::Local<v8::Value>& setter);
 +
-+		static v8::Local<v8::Array> GetPropertyKeys(v8::Isolate* isolate, const v8::Local<v8::Context>& context, const v8::Local<v8::Object>& object, bool& success);
++		static std::vector<v8::Local<v8::Value>> GetPropertyKeys(v8::Isolate* isolate, const v8::Local<v8::Object>& object);
 +
 +		static void CpuFeaturesProbe(bool cross_compile);
 +	private:
@@ -259,26 +259,23 @@ index 0000000000..c8634677ac
 +	};
 +}
 diff --git a/src/inspector/inspector_protocol_config.json b/src/inspector/inspector_protocol_config.json
-index c4aa29ce99..299cfbe24a 100644
+index c4aa29ce99..1875eb2898 100644
 --- a/src/inspector/inspector_protocol_config.json
 +++ b/src/inspector/inspector_protocol_config.json
-@@ -26,6 +26,37 @@
+@@ -26,6 +26,34 @@
              },
              {
                  "domain": "HeapProfiler"
 +            },
 +            {
 +                "domain": "Page",
-+                "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
-+                            "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot"],
++                "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled", "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot"],
 +                "async": ["getResourceContent", "searchInResource"],
 +                "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
 +            },
 +            {
 +                "domain": "Network",
-+                "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions",
-+                            "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception",
-+                            "takeResponseBodyForInterceptionAsStream"],
++                "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions", "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception", "takeResponseBodyForInterceptionAsStream"],
 +                "async": ["getResponseBody", "getRequestPostData"]
 +            },
 +            {
@@ -301,14 +298,13 @@ index c4aa29ce99..299cfbe24a 100644
          ]
      },
 diff --git a/src/inspector/js_protocol.pdl b/src/inspector/js_protocol.pdl
-index e4715f47ef..e588be7051 100644
+index c4ff51b060..1fee8a50a4 100644
 --- a/src/inspector/js_protocol.pdl
 +++ b/src/inspector/js_protocol.pdl
-@@ -1478,3 +1478,3108 @@ deprecated domain Schema
+@@ -1490,3 +1490,3107 @@ deprecated domain Schema
      returns
        # List of supported domains.
        array of Domain domains
-+
 +
 +# Actions and events related to the inspected page belong to the page domain.
 +domain Page
