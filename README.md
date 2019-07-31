@@ -15,44 +15,62 @@ export PATH=`pwd`/depot_tools:"$PATH"
 sudo apt-get install curl libc6-dev-i386 g++-multilib
 ```
 
-* Download and extract Android NDK 19c
+* Download and extract Android NDK r20
 
 Mac OS:
 ```
-curl -O https://dl.google.com/android/repository/android-ndk-r19c-darwin-x86_64.zip
-unzip android-ndk-r19c-darwin-x86_64.zip -d ndkr19c
+curl -O https://dl.google.com/android/repository/android-ndk-r20-darwin-x86_64.zip
+unzip android-ndk-r20-darwin-x86_64.zip -d ndkr20
 ```
 > You need to use XCode < 10 to be able to build v8
 
 Linux:
 ```
-curl -O https://dl.google.com/android/repository/android-ndk-r19c-linux-x86_64.zip
-unzip android-ndk-r19c-linux-x86_64.zip -d ndkr19c
+curl -O https://dl.google.com/android/repository/android-ndk-r20-linux-x86_64.zip
+unzip android-ndk-r20-linux-x86_64.zip -d ndkr20
 ```
 
 * Export ANDROID_NDK_HOME environment variable
 ```
-export ANDROID_NDK_HOME=`pwd`/ndkr19b/android-ndk-r19c
+export ANDROID_NDK_HOME=`pwd`/ndkr20/android-ndk-r20
 ```
 
-* `fetch v8` (this will create a `v8` repo folder)
-* cd v8
+* `fetch v8` (this will create a `v8` repo folder and add a `.gclient` file)
 
-* Create symlinks
+* Add `target_os` to the `.gclient` file:
+
+This will ensure that the required build dependencies are fetched by depot_tools
+
 ```
-mkdir third_party/android_tools
-ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk
-ln -s $ANDROID_NDK_HOME third_party/android_ndk
+solutions = [
+  {
+    "url": "https://chromium.googlesource.com/v8/v8.git",
+    "managed": False,
+    "name": "v8",
+    "deps_file": "DEPS",
+    "custom_deps": {},
+  },
+]
+target_os = ['android']
 ```
 
-* checkout tag 7.5.288.22
+* checkout tag 7.6.303.28
 ```
-git checkout 7.5.288.22
+cd v8
+git checkout 7.6.303.28
 ```
 
 * Run sync
 ```
 gclient sync
+```
+
+* Create symlinks
+```
+rm -rf third_party/android_tools third_party/android_ndk
+mkdir third_party/android_tools
+ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk
+ln -s $ANDROID_NDK_HOME third_party/android_ndk
 ```
 
 * Apply patch running the following command
