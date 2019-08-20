@@ -37,7 +37,7 @@ esac
 
 # The order of CPU architectures in this array must be the same
 # as the order of NDK tools in the NDK_BUILD_TOOLS_ARR array
-ARCH_ARR=(arm arm64 x86)
+ARCH_ARR=(arm arm64 x86 x64)
 
 BUILD_DIR_PREFIX="outgn"
 
@@ -110,6 +110,8 @@ do
                 SOURCE_DIR=$BUILD_DIR_PREFIX/$SNAPSHOT_PREFIX$CURRENT_ARCH-$BUILD_TYPE/clang_x86_v8_$CURRENT_ARCH
         elif [[ $CURRENT_ARCH == "x86" ]] ;then
                 SOURCE_DIR=$BUILD_DIR_PREFIX/$SNAPSHOT_PREFIX$CURRENT_ARCH-$BUILD_TYPE/clang_x86
+        elif [[ $CURRENT_ARCH == "x64" ]] ;then
+                SOURCE_DIR=$BUILD_DIR_PREFIX/$SNAPSHOT_PREFIX$CURRENT_ARCH-$BUILD_TYPE/clang_x64
         fi
 
         cp -r $SOURCE_DIR/mksnapshot $DIST
@@ -130,6 +132,8 @@ do
                 SOURCE_DIR=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/clang_x86_v8_$CURRENT_ARCH
         elif [[ $CURRENT_ARCH == "x86" ]] ;then
                 SOURCE_DIR=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/clang_x86
+        elif [[ $CURRENT_ARCH == "x64" ]] ;then
+                SOURCE_DIR=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/clang_x64
         fi
 
         pushd $SOURCE_DIR/..
