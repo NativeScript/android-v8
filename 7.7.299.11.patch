@@ -1,8 +1,8 @@
 diff --git a/BUILD.gn b/BUILD.gn
-index 8640517ae5..2e140a9107 100644
+index efca4a626f..3ce80f2d39 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -2008,6 +2008,8 @@ v8_source_set("v8_base_without_compiler") {
+@@ -1975,6 +1975,8 @@ v8_source_set("v8_base_without_compiler") {
      "include/v8-wasm-trap-handler-posix.h",
      "include/v8.h",
      "include/v8config.h",
@@ -11,296 +11,10 @@ index 8640517ae5..2e140a9107 100644
      "src/api/api-arguments-inl.h",
      "src/api/api-arguments.cc",
      "src/api/api-arguments.h",
-diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
-new file mode 100644
-index 0000000000..2d9e1401dc
---- /dev/null
-+++ b/src/V8NativeScriptExtension.cc
-@@ -0,0 +1,212 @@
-+#include "V8NativeScriptExtension.h"
-+#include "objects/objects-inl.h"
-+#include "objects/contexts.h"
-+#include "objects/keys.h"
-+#include "api/api-inl.h"
-+#include "common/checks.h"
-+#include "common/globals.h"
-+#include "handles/handles.h"
-+#include "codegen/assembler.h"
-+#include <assert.h>
-+
-+using namespace v8;
-+
-+template<typename T>
-+class unsafe_arr
-+{
-+public:
-+	unsafe_arr()
-+		: m_capacity(16), m_size(0)
-+	{
-+		m_data = alloc_data(m_capacity);
-+	}
-+
-+	void push_back(const T& e)
-+	{
-+		if (m_size == m_capacity)
-+		{
-+			resize();
-+		}
-+		m_data[m_size++] = e;
-+	}
-+
-+	T* data() const
-+	{
-+		return m_data;
-+	}
-+
-+	size_t size() const
-+	{
-+		return m_size;
-+	}
-+
-+	static void release_data(T *data)
-+	{
-+		free(data);
-+	}
-+
-+private:
-+	T* alloc_data(size_t size)
-+	{
-+		T *data = reinterpret_cast<T*>(malloc(size * sizeof(T)));
-+		return data;
-+	}
-+
-+	void resize()
-+	{
-+		size_t capacity = 2 * m_capacity;
-+		T *data = alloc_data(capacity);
-+		size_t size = m_size * sizeof(T);
-+		memcpy(data, m_data, size);
-+		release_data(m_data);
-+		m_data = data;
-+		m_capacity = capacity;
-+	}
-+
-+	size_t m_capacity;
-+	size_t m_size;
-+	T *m_data;
-+};
-+
-+
-+NativeScriptExtension::NativeScriptExtension()
-+{
-+}
-+
-+
-+unsigned long NativeScriptExtension::GetAddress(const Local<Object>& obj)
-+{
-+	i::Handle<i::JSReceiver> h = Utils::OpenHandle(*obj);
-+
-+	return h->address();
-+}
-+
-+Local<Value>* NativeScriptExtension::GetClosureObjects(Isolate* isolate, const Local<Function>& func, int* length)
-+{
-+	unsafe_arr<Local<Value>> arr;
-+
-+	i::Handle<i::JSReceiver> receiver = Utils::OpenHandle(*func);
-+
-+	bool isFunction = receiver->IsJSFunction();
-+
-+	if (!isFunction) {
-+		*length = static_cast<int>(arr.size());
-+		return arr.data();
-+	}
-+
-+	i::Handle<i::JSFunction> f = i::Handle<i::JSFunction>::cast(receiver);
-+
-+	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
-+
-+	v8::internal::Context cxt = f->context();
-+
-+	i::ContextLookupFlags cxtFlags = i::FOLLOW_CHAINS;
-+
-+	if (!cxt.is_null() && !cxt.IsNativeContext())
-+	{
-+		v8::internal::ScopeInfo si = cxt.scope_info();
-+
-+		if (!si.is_null() && si.HasContext())
-+		{
-+			int len = si.length();
-+
-+			for (int i = 0; i < len; i++)
-+			{
-+				v8::internal::Object cur = si.get(i);
-+
-+				if (!cur.IsNullOrUndefined() && cur.IsString())
-+				{
-+					v8::internal::String s = i::String::cast(cur);
-+
-+					i::Handle<i::String> name = i::Handle<i::String>(s, internal_isolate);
-+
-+					i::PropertyAttributes attr;
-+					i::InitializationFlag init_flag;
-+					i::VariableMode var_mode;
-+					int idx;
-+
-+                                        i::Handle<v8::internal::Context> cxtHandle = i::Handle<v8::internal::Context>(cxt, internal_isolate);
-+					i::Handle<i::Object> o = v8::internal::Context::Lookup(cxtHandle, name, cxtFlags, &idx, &attr, &init_flag, &var_mode);
-+
-+					if (idx >= 0)
-+					{
-+						i::Handle<i::Context> hndCxt = i::Handle<i::Context>::cast(o);
-+						i::Handle<i::Object> obj = i::Handle<i::Object>(hndCxt->get(idx), internal_isolate);
-+
-+						if (!obj.is_null() && obj->IsObject())
-+						{
-+							Local<Value> local = Utils::ToLocal(obj);
-+
-+							arr.push_back(local);
-+						}
-+					}
-+				}
-+			} // for
-+		} // si != nullptr
-+	}
-+
-+	*length = static_cast<int>(arr.size());
-+	return arr.data();
-+}
-+
-+
-+void NativeScriptExtension::ReleaseClosureObjects(Local<Value>* closureObjects)
-+{
-+	unsafe_arr<Local<Value>>::release_data(closureObjects);
-+}
-+
-+
-+void NativeScriptExtension::GetAssessorPair(Isolate* isolate, const Local<Object>& obj, const Local<String>& propName, Local<Value>& getter, Local<Value>& setter)
-+{
-+	i::Handle<i::JSObject> o = i::Handle<i::JSObject>::cast(Utils::OpenHandle(*obj));
-+
-+	i::Handle<i::String> intname = Utils::OpenHandle(*propName);
-+
-+	//Isolate* isolate = object->GetIsolate();
-+	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
-+
-+	internal::LookupIterator it(internal_isolate, o, intname, internal::LookupIterator::OWN);
-+	i::Handle<i::Object> maybe_pair = it.GetAccessors();
-+
-+	// if (maybe_pair->IsAccessorPair()) {
-+		i::MaybeHandle<i::Object> g = internal::AccessorPair::GetComponent(internal_isolate, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_GETTER);
-+		if (!g.is_null())
-+		{
-+			getter = Utils::ToLocal(g.ToHandleChecked());
-+		}
-+
-+		i::MaybeHandle<i::Object> s = internal::AccessorPair::GetComponent(internal_isolate, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_SETTER);
-+		if (!s.is_null())
-+		{
-+			setter = Utils::ToLocal(s.ToHandleChecked());
-+		}
-+	// }
-+}
-+
-+
-+std::vector<Local<Value>> NativeScriptExtension::GetPropertyKeys(Isolate* isolate, const Local<Object>& object)
-+{
-+	i::Handle<i::JSObject> obj = i::Handle<i::JSObject>::cast(Utils::OpenHandle(*object));
-+	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
-+
-+	i::Handle<i::FixedArray> arr = i::KeyAccumulator::GetOwnEnumPropertyKeys(internal_isolate, obj);
-+
-+	int len = arr->length();
-+
-+	std::vector<Local<Value>> keys(len);
-+	for (int i = 0; i < len; i++)
-+	{
-+		i::Handle<i::Object> elem = i::Handle<i::Object>(arr->get(i), obj->GetIsolate());
-+		Local<Value> val = Utils::ToLocal(elem);
-+                if (!val.IsEmpty())
-+                {
-+                        keys.push_back(val);
-+                }
-+	}
-+
-+	return keys;
-+}
-+
-+void NativeScriptExtension::CpuFeaturesProbe(bool cross_compile) {
-+	i::CpuFeatures::Probe(cross_compile);
-+}
-diff --git a/src/V8NativeScriptExtension.h b/src/V8NativeScriptExtension.h
-new file mode 100644
-index 0000000000..1bb4fc36e0
---- /dev/null
-+++ b/src/V8NativeScriptExtension.h
-@@ -0,0 +1,23 @@
-+#include <vector>
-+#include "init/v8.h"
-+#include "api/api.h"
-+
-+namespace v8 {
-+
-+	class NativeScriptExtension {
-+	public:
-+		static unsigned long GetAddress(const v8::Local<v8::Object>& obj);
-+
-+		static v8::Local<v8::Value>* GetClosureObjects(v8::Isolate* isolate, const v8::Local<v8::Function>& func, int* length);
-+
-+		static void ReleaseClosureObjects(v8::Local<v8::Value>* closureObjects);
-+
-+		static void GetAssessorPair(v8::Isolate* isolate, const v8::Local<v8::Object>& obj, const v8::Local<v8::String>& propName, v8::Local<v8::Value>& getter, v8::Local<v8::Value>& setter);
-+
-+		static std::vector<v8::Local<v8::Value>> GetPropertyKeys(v8::Isolate* isolate, const v8::Local<v8::Object>& object);
-+
-+		static void CpuFeaturesProbe(bool cross_compile);
-+	private:
-+		NativeScriptExtension();
-+	};
-+}
-diff --git a/src/inspector/inspector_protocol_config.json b/src/inspector/inspector_protocol_config.json
-index c4aa29ce99..1875eb2898 100644
---- a/src/inspector/inspector_protocol_config.json
-+++ b/src/inspector/inspector_protocol_config.json
-@@ -26,6 +26,34 @@
-             },
-             {
-                 "domain": "HeapProfiler"
-+            },
-+            {
-+                "domain": "Page",
-+                "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled", "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot"],
-+                "async": ["getResourceContent", "searchInResource"],
-+                "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
-+            },
-+            {
-+                "domain": "Network",
-+                "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions", "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception", "takeResponseBodyForInterceptionAsStream"],
-+                "async": ["getResponseBody", "getRequestPostData"]
-+            },
-+            {
-+                "domain": "DOM"
-+            },
-+            {
-+                "domain": "CSS",
-+                "async": ["enable"]
-+            },
-+            {
-+                "domain": "Overlay"
-+            },
-+            {
-+                "domain": "Log"
-+            },
-+            {
-+                "domain": "Security",
-+                "include": []
-             }
-         ]
-     },
-diff --git a/src/inspector/js_protocol.pdl b/src/inspector/js_protocol.pdl
+diff --git a/include/js_protocol.pdl b/include/js_protocol.pdl
 index c4ff51b060..1fee8a50a4 100644
---- a/src/inspector/js_protocol.pdl
-+++ b/src/inspector/js_protocol.pdl
+--- a/include/js_protocol.pdl
++++ b/include/js_protocol.pdl
 @@ -1490,3 +1490,3107 @@ deprecated domain Schema
      returns
        # List of supported domains.
@@ -3409,3 +3123,289 @@ index c4ff51b060..1fee8a50a4 100644
 +      InsecureContentStatus insecureContentStatus
 +      # Overrides user-visible description of the state.
 +      optional string summary
+diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
+new file mode 100644
+index 0000000000..3d4641157a
+--- /dev/null
++++ b/src/V8NativeScriptExtension.cc
+@@ -0,0 +1,212 @@
++#include "V8NativeScriptExtension.h"
++#include "objects/objects-inl.h"
++#include "objects/contexts.h"
++#include "objects/keys.h"
++#include "api/api-inl.h"
++#include "common/checks.h"
++#include "common/globals.h"
++#include "handles/handles.h"
++#include "codegen/assembler.h"
++#include <assert.h>
++
++using namespace v8;
++
++template<typename T>
++class unsafe_arr
++{
++public:
++	unsafe_arr()
++		: m_capacity(16), m_size(0)
++	{
++		m_data = alloc_data(m_capacity);
++	}
++
++	void push_back(const T& e)
++	{
++		if (m_size == m_capacity)
++		{
++			resize();
++		}
++		m_data[m_size++] = e;
++	}
++
++	T* data() const
++	{
++		return m_data;
++	}
++
++	size_t size() const
++	{
++		return m_size;
++	}
++
++	static void release_data(T *data)
++	{
++		free(data);
++	}
++
++private:
++	T* alloc_data(size_t size)
++	{
++		T *data = reinterpret_cast<T*>(malloc(size * sizeof(T)));
++		return data;
++	}
++
++	void resize()
++	{
++		size_t capacity = 2 * m_capacity;
++		T *data = alloc_data(capacity);
++		size_t size = m_size * sizeof(T);
++		memcpy(data, m_data, size);
++		release_data(m_data);
++		m_data = data;
++		m_capacity = capacity;
++	}
++
++	size_t m_capacity;
++	size_t m_size;
++	T *m_data;
++};
++
++
++NativeScriptExtension::NativeScriptExtension()
++{
++}
++
++
++unsigned long NativeScriptExtension::GetAddress(const Local<Object>& obj)
++{
++	i::Handle<i::JSReceiver> h = Utils::OpenHandle(*obj);
++
++	return h->address();
++}
++
++Local<Value>* NativeScriptExtension::GetClosureObjects(Isolate* isolate, const Local<Function>& func, int* length)
++{
++	unsafe_arr<Local<Value>> arr;
++
++	i::Handle<i::JSReceiver> receiver = Utils::OpenHandle(*func);
++
++	bool isFunction = receiver->IsJSFunction();
++
++	if (!isFunction) {
++		*length = static_cast<int>(arr.size());
++		return arr.data();
++	}
++
++	i::Handle<i::JSFunction> f = i::Handle<i::JSFunction>::cast(receiver);
++
++	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
++
++	v8::internal::Context cxt = f->context();
++
++	i::ContextLookupFlags cxtFlags = i::FOLLOW_CHAINS;
++
++	if (!cxt.is_null() && !cxt.IsNativeContext())
++	{
++		v8::internal::ScopeInfo si = cxt.scope_info();
++
++		if (!si.is_null() && si.HasContext())
++		{
++			int len = si.length();
++
++			for (int i = 0; i < len; i++)
++			{
++				v8::internal::Object cur = si.get(i);
++
++				if (!cur.IsNullOrUndefined() && cur.IsString())
++				{
++					v8::internal::String s = i::String::cast(cur);
++
++					i::Handle<i::String> name = i::Handle<i::String>(s, internal_isolate);
++
++					i::PropertyAttributes attr;
++					i::InitializationFlag init_flag;
++					i::VariableMode var_mode;
++					int idx;
++
++					i::Handle<v8::internal::Context> cxtHandle = i::Handle<v8::internal::Context>(cxt, internal_isolate);
++					i::Handle<i::Object> o = v8::internal::Context::Lookup(cxtHandle, name, cxtFlags, &idx, &attr, &init_flag, &var_mode);
++
++					if (idx >= 0)
++					{
++						i::Handle<i::Context> hndCxt = i::Handle<i::Context>::cast(o);
++						i::Handle<i::Object> obj = i::Handle<i::Object>(hndCxt->get(idx), internal_isolate);
++
++						if (!obj.is_null() && obj->IsObject())
++						{
++							Local<Value> local = Utils::ToLocal(obj);
++
++							arr.push_back(local);
++						}
++					}
++				}
++			} // for
++		} // si != nullptr
++	}
++
++	*length = static_cast<int>(arr.size());
++	return arr.data();
++}
++
++
++void NativeScriptExtension::ReleaseClosureObjects(Local<Value>* closureObjects)
++{
++	unsafe_arr<Local<Value>>::release_data(closureObjects);
++}
++
++
++void NativeScriptExtension::GetAssessorPair(Isolate* isolate, const Local<Object>& obj, const Local<String>& propName, Local<Value>& getter, Local<Value>& setter)
++{
++	i::Handle<i::JSObject> o = i::Handle<i::JSObject>::cast(Utils::OpenHandle(*obj));
++
++	i::Handle<i::String> intname = Utils::OpenHandle(*propName);
++
++	//Isolate* isolate = object->GetIsolate();
++	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
++
++	internal::LookupIterator it(internal_isolate, o, intname, internal::LookupIterator::OWN);
++	i::Handle<i::Object> maybe_pair = it.GetAccessors();
++
++	// if (maybe_pair->IsAccessorPair()) {
++		i::MaybeHandle<i::Object> g = internal::AccessorPair::GetComponent(internal_isolate, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_GETTER);
++		if (!g.is_null())
++		{
++			getter = Utils::ToLocal(g.ToHandleChecked());
++		}
++
++		i::MaybeHandle<i::Object> s = internal::AccessorPair::GetComponent(internal_isolate, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_SETTER);
++		if (!s.is_null())
++		{
++			setter = Utils::ToLocal(s.ToHandleChecked());
++		}
++	// }
++}
++
++
++std::vector<Local<Value>> NativeScriptExtension::GetPropertyKeys(Isolate* isolate, const Local<Object>& object)
++{
++	i::Handle<i::JSObject> obj = i::Handle<i::JSObject>::cast(Utils::OpenHandle(*object));
++	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
++
++	i::Handle<i::FixedArray> arr = i::KeyAccumulator::GetOwnEnumPropertyKeys(internal_isolate, obj);
++
++	int len = arr->length();
++
++	std::vector<Local<Value>> keys(len);
++	for (int i = 0; i < len; i++)
++	{
++		i::Handle<i::Object> elem = i::Handle<i::Object>(arr->get(i), obj->GetIsolate());
++		Local<Value> val = Utils::ToLocal(elem);
++			if (!val.IsEmpty())
++			{
++				keys.push_back(val);
++			}
++	}
++
++	return keys;
++}
++
++void NativeScriptExtension::CpuFeaturesProbe(bool cross_compile) {
++	i::CpuFeatures::Probe(cross_compile);
++}
+diff --git a/src/V8NativeScriptExtension.h b/src/V8NativeScriptExtension.h
+new file mode 100644
+index 0000000000..1bb4fc36e0
+--- /dev/null
++++ b/src/V8NativeScriptExtension.h
+@@ -0,0 +1,23 @@
++#include <vector>
++#include "init/v8.h"
++#include "api/api.h"
++
++namespace v8 {
++
++	class NativeScriptExtension {
++	public:
++		static unsigned long GetAddress(const v8::Local<v8::Object>& obj);
++
++		static v8::Local<v8::Value>* GetClosureObjects(v8::Isolate* isolate, const v8::Local<v8::Function>& func, int* length);
++
++		static void ReleaseClosureObjects(v8::Local<v8::Value>* closureObjects);
++
++		static void GetAssessorPair(v8::Isolate* isolate, const v8::Local<v8::Object>& obj, const v8::Local<v8::String>& propName, v8::Local<v8::Value>& getter, v8::Local<v8::Value>& setter);
++
++		static std::vector<v8::Local<v8::Value>> GetPropertyKeys(v8::Isolate* isolate, const v8::Local<v8::Object>& object);
++
++		static void CpuFeaturesProbe(bool cross_compile);
++	private:
++		NativeScriptExtension();
++	};
++}
+diff --git a/src/inspector/inspector_protocol_config.json b/src/inspector/inspector_protocol_config.json
+index 684940c885..077ff61b6d 100644
+--- a/src/inspector/inspector_protocol_config.json
++++ b/src/inspector/inspector_protocol_config.json
+@@ -26,6 +26,34 @@
+             },
+             {
+                 "domain": "HeapProfiler"
++            },
++            {
++                "domain": "Page",
++                "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled", "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot"],
++                "async": ["getResourceContent", "searchInResource"],
++                "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
++            },
++            {
++                "domain": "Network",
++                "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions", "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception", "takeResponseBodyForInterceptionAsStream"],
++                "async": ["getResponseBody", "getRequestPostData"]
++            },
++            {
++                "domain": "DOM"
++            },
++            {
++                "domain": "CSS",
++                "async": ["enable"]
++            },
++            {
++                "domain": "Overlay"
++            },
++            {
++                "domain": "Log"
++            },
++            {
++                "domain": "Security",
++                "include": []
+             }
+         ]
+     },
