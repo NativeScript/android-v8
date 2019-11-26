@@ -1,8 +1,8 @@
 diff --git a/BUILD.gn b/BUILD.gn
-index efca4a626f..3ce80f2d39 100644
+index c486f1a1c8..c6cf99f47b 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -1975,6 +1975,8 @@ v8_source_set("v8_base_without_compiler") {
+@@ -2008,6 +2008,8 @@ v8_source_set("v8_base_without_compiler") {
      "include/v8-wasm-trap-handler-posix.h",
      "include/v8.h",
      "include/v8config.h",
@@ -3125,10 +3125,10 @@ index c4ff51b060..1fee8a50a4 100644
 +      optional string summary
 diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
 new file mode 100644
-index 0000000000..3d4641157a
+index 0000000000..528d06206e
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.cc
-@@ -0,0 +1,212 @@
+@@ -0,0 +1,213 @@
 +#include "V8NativeScriptExtension.h"
 +#include "objects/objects-inl.h"
 +#include "objects/contexts.h"
@@ -3298,15 +3298,16 @@ index 0000000000..3d4641157a
 +
 +	internal::LookupIterator it(internal_isolate, o, intname, internal::LookupIterator::OWN);
 +	i::Handle<i::Object> maybe_pair = it.GetAccessors();
++	i::Handle<i::NativeContext> native_context = it.GetHolder<i::JSReceiver>()->GetCreationContext();
 +
 +	// if (maybe_pair->IsAccessorPair()) {
-+		i::MaybeHandle<i::Object> g = internal::AccessorPair::GetComponent(internal_isolate, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_GETTER);
++		i::MaybeHandle<i::Object> g = internal::AccessorPair::GetComponent(internal_isolate, native_context, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_GETTER);
 +		if (!g.is_null())
 +		{
 +			getter = Utils::ToLocal(g.ToHandleChecked());
 +		}
 +
-+		i::MaybeHandle<i::Object> s = internal::AccessorPair::GetComponent(internal_isolate, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_SETTER);
++		i::MaybeHandle<i::Object> s = internal::AccessorPair::GetComponent(internal_isolate, native_context, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_SETTER);
 +		if (!s.is_null())
 +		{
 +			setter = Utils::ToLocal(s.ToHandleChecked());
