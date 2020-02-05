@@ -15,24 +15,24 @@ export PATH=`pwd`/depot_tools:"$PATH"
 sudo apt-get install curl libc6-dev-i386 g++-multilib
 ```
 
-* Download and extract Android NDK r20
+* Download and extract Android NDK r21
 
 Mac OS:
 ```
-curl -O https://dl.google.com/android/repository/android-ndk-r20-darwin-x86_64.zip
-unzip android-ndk-r20-darwin-x86_64.zip -d ndkr20
+curl -O https://dl.google.com/android/repository/android-ndk-r21-darwin-x86_64.zip
+unzip android-ndk-r21-darwin-x86_64.zip -d ndkr21
 ```
 > You need to use XCode < 10 to be able to build v8
 
 Linux:
 ```
-curl -O https://dl.google.com/android/repository/android-ndk-r20-linux-x86_64.zip
-unzip android-ndk-r20-linux-x86_64.zip -d ndkr20
+curl -O https://dl.google.com/android/repository/android-ndk-r21-linux-x86_64.zip
+unzip android-ndk-r21-linux-x86_64.zip -d ndkr21
 ```
 
 * Export ANDROID_NDK_HOME environment variable
 ```
-export ANDROID_NDK_HOME=`pwd`/ndkr20/android-ndk-r20
+export ANDROID_NDK_HOME=`pwd`/ndkr21/android-ndk-r21
 ```
 
 * `fetch v8` (this will create a `v8` repo folder and add a `.gclient` file)
@@ -54,10 +54,10 @@ solutions = [
 target_os = ['android']
 ```
 
-* checkout tag 7.9.317.31
+* checkout tag 8.0.426.16
 ```
 cd v8
-git checkout 7.9.317.31
+git checkout 8.0.426.16
 ```
 
 * Run sync
@@ -67,6 +67,7 @@ gclient sync
 
 * Create symlinks
 ```
+cp third_party/android_tools third_party/android_ndk/BUILD.gn $ANDROID_NDK_HOME
 rm -rf third_party/android_tools third_party/android_ndk
 mkdir third_party/android_tools
 ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk

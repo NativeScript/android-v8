@@ -1,8 +1,8 @@
 diff --git a/BUILD.gn b/BUILD.gn
-index 5df0619b1d..a4600d7cdc 100644
+index 90b7e33972..bfdcce03b1 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -2048,6 +2048,8 @@ v8_source_set("v8_base_without_compiler") {
+@@ -1963,6 +1963,8 @@ v8_source_set("v8_base_without_compiler") {
      "include/v8-wasm-trap-handler-posix.h",
      "include/v8.h",
      "include/v8config.h",
@@ -12,10 +12,10 @@ index 5df0619b1d..a4600d7cdc 100644
      "src/api/api-arguments.cc",
      "src/api/api-arguments.h",
 diff --git a/include/js_protocol.pdl b/include/js_protocol.pdl
-index 51f3c6f68a..06bc55096b 100644
+index 427d654cac..7866d02fa2 100644
 --- a/include/js_protocol.pdl
 +++ b/include/js_protocol.pdl
-@@ -1501,3 +1501,3107 @@ deprecated domain Schema
+@@ -1525,3 +1525,3107 @@ deprecated domain Schema
      returns
        # List of supported domains.
        array of Domain domains
@@ -3370,7 +3370,7 @@ index 0000000000..1bb4fc36e0
 +	};
 +}
 diff --git a/src/inspector/inspector_protocol_config.json b/src/inspector/inspector_protocol_config.json
-index 684940c885..077ff61b6d 100644
+index 0fd6b2d5ec..8498e8e19d 100644
 --- a/src/inspector/inspector_protocol_config.json
 +++ b/src/inspector/inspector_protocol_config.json
 @@ -26,6 +26,34 @@
