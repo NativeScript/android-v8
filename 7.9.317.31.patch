@@ -1,8 +1,8 @@
 diff --git a/BUILD.gn b/BUILD.gn
-index c486f1a1c8..c6cf99f47b 100644
+index 5df0619b1d..a4600d7cdc 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -2008,6 +2008,8 @@ v8_source_set("v8_base_without_compiler") {
+@@ -2048,6 +2048,8 @@ v8_source_set("v8_base_without_compiler") {
      "include/v8-wasm-trap-handler-posix.h",
      "include/v8.h",
      "include/v8config.h",
@@ -12,10 +12,10 @@ index c486f1a1c8..c6cf99f47b 100644
      "src/api/api-arguments.cc",
      "src/api/api-arguments.h",
 diff --git a/include/js_protocol.pdl b/include/js_protocol.pdl
-index c4ff51b060..1fee8a50a4 100644
+index 51f3c6f68a..06bc55096b 100644
 --- a/include/js_protocol.pdl
 +++ b/include/js_protocol.pdl
-@@ -1490,3 +1490,3107 @@ deprecated domain Schema
+@@ -1501,3 +1501,3107 @@ deprecated domain Schema
      returns
        # List of supported domains.
        array of Domain domains
@@ -3125,10 +3125,10 @@ index c4ff51b060..1fee8a50a4 100644
 +      optional string summary
 diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
 new file mode 100644
-index 0000000000..528d06206e
+index 0000000000..fac39a8f35
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.cc
-@@ -0,0 +1,213 @@
+@@ -0,0 +1,211 @@
 +#include "V8NativeScriptExtension.h"
 +#include "objects/objects-inl.h"
 +#include "objects/contexts.h"
@@ -3300,19 +3300,17 @@ index 0000000000..528d06206e
 +	i::Handle<i::Object> maybe_pair = it.GetAccessors();
 +	i::Handle<i::NativeContext> native_context = it.GetHolder<i::JSReceiver>()->GetCreationContext();
 +
-+	// if (maybe_pair->IsAccessorPair()) {
-+		i::MaybeHandle<i::Object> g = internal::AccessorPair::GetComponent(internal_isolate, native_context, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_GETTER);
-+		if (!g.is_null())
-+		{
-+			getter = Utils::ToLocal(g.ToHandleChecked());
-+		}
++	i::MaybeHandle<i::Object> g = internal::AccessorPair::GetComponent(internal_isolate, native_context, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_GETTER);
++	if (!g.is_null())
++	{
++		getter = Utils::ToLocal(g.ToHandleChecked());
++	}
 +
-+		i::MaybeHandle<i::Object> s = internal::AccessorPair::GetComponent(internal_isolate, native_context, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_SETTER);
-+		if (!s.is_null())
-+		{
-+			setter = Utils::ToLocal(s.ToHandleChecked());
-+		}
-+	// }
++	i::MaybeHandle<i::Object> s = internal::AccessorPair::GetComponent(internal_isolate, native_context, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_SETTER);
++	if (!s.is_null())
++	{
++		setter = Utils::ToLocal(s.ToHandleChecked());
++	}
 +}
 +
 +

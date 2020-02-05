@@ -54,10 +54,10 @@ solutions = [
 target_os = ['android']
 ```
 
-* checkout tag 7.8.279.19
+* checkout tag 7.9.317.31
 ```
 cd v8
-git checkout 7.8.279.19
+git checkout 7.9.317.31
 ```
 
 * Run sync
