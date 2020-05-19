@@ -15,24 +15,17 @@ export PATH=`pwd`/depot_tools:"$PATH"
 sudo apt-get install curl libc6-dev-i386 g++-multilib
 ```
 
-* Download and extract Android NDK r21
-
-Mac OS:
-```
-curl -O https://dl.google.com/android/repository/android-ndk-r21-darwin-x86_64.zip
-unzip android-ndk-r21-darwin-x86_64.zip -d ndkr21
-```
-> You need to use XCode < 10 to be able to build v8
+* Download and extract Android NDK r21b
 
 Linux:
 ```
-curl -O https://dl.google.com/android/repository/android-ndk-r21-linux-x86_64.zip
-unzip android-ndk-r21-linux-x86_64.zip -d ndkr21
+curl -O https://dl.google.com/android/repository/android-ndk-r21b-linux-x86_64.zip
+unzip android-ndk-r21b-linux-x86_64.zip -d ndkr21b
 ```
 
 * Export ANDROID_NDK_HOME environment variable
 ```
-export ANDROID_NDK_HOME=`pwd`/ndkr21/android-ndk-r21
+export ANDROID_NDK_HOME=`pwd`/ndkr21b/android-ndk-r21b
 ```
 
 * `fetch v8` (this will create a `v8` repo folder and add a `.gclient` file)
@@ -54,10 +47,10 @@ solutions = [
 target_os = ['android']
 ```
 
-* checkout tag 8.0.426.16
+* checkout tag 8.1.307.32
 ```
 cd v8
-git checkout 8.0.426.16
+git checkout 8.1.307.32
 ```
 
 * Run sync
@@ -67,7 +60,7 @@ gclient sync
 
 * Create symlinks
 ```
-cp third_party/android_tools third_party/android_ndk/BUILD.gn $ANDROID_NDK_HOME
+cp third_party/android_ndk/BUILD.gn $ANDROID_NDK_HOME
 rm -rf third_party/android_tools third_party/android_ndk
 mkdir third_party/android_tools
 ln -s $ANDROID_NDK_HOME third_party/android_tools/ndk
