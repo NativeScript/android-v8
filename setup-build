@@ -45,7 +45,7 @@ mkdir third_party/android_tools
 ln -fs $ANDROID_NDK third_party/android_tools/ndk
 
 
-cp ../android-v8/build_fat build_fat
+# cp ../android-v8/build_fat build_fat
 
 # list the target tag
 git branch --remotes | grep branch-heads/$1
