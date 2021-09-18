@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONFIGFILE=./persistent.vars
+CONFIGFILE=../persistent.vars
 if [ -r ${CONFIGFILE} ]; then
   # Read the configfile if it's existing and readable
   source ${CONFIGFILE}
