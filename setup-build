@@ -10,7 +10,8 @@ cd ..
 
 # get depot tools [more](https://www.chromium.org/developers/how-tos/install-depot-tools) : 
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-# export PATH=`pwd`/depot_tools:$PATH
+# we are going to use it here and in build script
+export PATH=`pwd`/depot_tools:$PATH
 echo PATH=`pwd`/depot_tools:$PATH > ${CONFIGFILE}
 
 # make sure you have these packages installed
