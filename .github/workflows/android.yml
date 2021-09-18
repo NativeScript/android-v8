@@ -26,7 +26,7 @@ jobs:
 
       - name: Build  V8
         run: |
-          sh ./setup-build 9.2.230.18
+          ./setup-build.sh 9.2.230.18
           export
           ./build.sh
 
