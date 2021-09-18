@@ -24,11 +24,10 @@ jobs:
           sudo apt-get install curl build-essential g++-multilib ninja-build
           git config --global user.email "git@job.com"; git config --global user.name "GitJob"
 
-      - name: Setup Build V8 9.2.230.18
-        run: sh ./setup-build 9.2.230.18
-
       - name: Build  V8
-        run: ./build.sh
+        run: |
+          sh ./setup-build 9.2.230.18
+          ./build.sh
 
       - uses: actions/upload-artifact@v2
         with:
