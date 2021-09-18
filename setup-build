@@ -3,7 +3,7 @@
 if [ -z "$1" ]
 then echo "V8 tag to fetch requried" && exit -1
 fi
-ndk='22b'
+ndk='19c'
 
 cd ..
 
