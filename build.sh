@@ -2,8 +2,9 @@
 
 CONFIGFILE=../persistent.vars
 if [ -r ${CONFIGFILE} ]; then
-  # Read the configfile if it's existing and readable
-  source ${CONFIGFILE}
+        echo"found CONFIGFILE"
+        # Read the configfile if it's existing and readable
+        source ${CONFIGFILE}
 fi
 ## prepare configuration
 
