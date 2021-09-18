@@ -12,10 +12,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      env:
-        DEBIAN_FRONTEND: noninteractive
-        TZ: UTC
 
     steps:
       - uses: actions/checkout@v2
