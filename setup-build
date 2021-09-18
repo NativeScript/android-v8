@@ -38,7 +38,7 @@ export ANDROID_NDK=`pwd`/ndk$ndk/android-ndk-r$ndk/
 fetch v8
 
 # copy `build_fat` script in `v8` directory
-cd v8
+pushd v8
 
 # Link ndk dir into v8 source path
 mkdir third_party/android_tools
@@ -52,13 +52,14 @@ git branch --remotes | grep $1
 
 # checkout tag 
 git checkout $1
+pop
 
-echo "=========================================="
-echo
-echo "Appling Nativescript Patches. Merge the changes manually (May require fixing build if V8 APIs have changed)"
-echo 
-echo "=========================================="
-git am ../android-v8/*.patch
+# echo "=========================================="
+# echo
+# echo "Appling Nativescript Patches. Merge the changes manually (May require fixing build if V8 APIs have changed)"
+# echo 
+# echo "=========================================="
+# git am ../*.patch
 
 
 
