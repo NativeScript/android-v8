@@ -27,6 +27,7 @@ jobs:
       - name: Build  V8
         run: |
           sh ./setup-build 9.2.230.18
+          export
           ./build.sh
 
       - uses: actions/upload-artifact@v2
