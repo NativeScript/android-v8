@@ -16,7 +16,7 @@ BUILD_DIR_PREFIX="outgn"
 
 BUILD_TYPE="release"
 
-cd v8
+cd ../v8
 if [[ $1 == "debug" ]] ;then
         BUILD_TYPE="debug"
 fi
