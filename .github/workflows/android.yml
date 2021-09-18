@@ -21,7 +21,7 @@ jobs:
           sudo ln -fs /usr/share/zoneinfo/UTC /etc/localtime
           sudo apt-get update
           sudo apt-get upgrade -y
-          sudo apt-get install curl libc6-dev-i386 g++-multilib libstdc++-dev ninja-build
+          sudo apt-get install curl build-essential g++-multilib ninja-build
           git config --global user.email "git@job.com"; git config --global user.name "GitJob"
 
       - name: Setup Build V8 9.2.230.18
