@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Git prepare
+        run: git config --global user.email "git@job.com"; git config --global user.name "GitJob"
+
       - name: Setup Build V8 9.2.230.18
         run: sh setup-build 9.2.230.18
 
