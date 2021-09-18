@@ -66,4 +66,6 @@ echo "=========================================="
 git apply --cached ../android-v8/9.2.230.18.patch
 
 
+cat ${CONFIGFILE}
+
 
