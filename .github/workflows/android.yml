@@ -16,10 +16,10 @@ jobs:
         run: git config --global user.email "git@job.com"; git config --global user.name "GitJob"
 
       - name: Setup Build V8 9.2.230.18
-        run: sh setup-build 9.2.230.18
+        run: sh ./setup-build 9.2.230.18
 
       - name: Build  V8
-        run: sh buid.sh
+        run: sh ./build.sh
 
       - uses: actions/upload-artifact@v2
         with:
