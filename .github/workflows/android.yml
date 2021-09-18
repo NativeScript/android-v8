@@ -3,8 +3,7 @@ name: Build for Android
 on:
   push:
     branches:
-      - main
-      - '*-stable'
+      - master
   pull_request:
 
 jobs:
