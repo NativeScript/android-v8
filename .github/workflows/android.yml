@@ -1,0 +1,28 @@
+name: Build for Android
+
+on:
+  push:
+    branches:
+      - main
+      - '*-stable'
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Build V8 9.2.230.18
+        run: sh setup-build 9.2.230.18
+
+      - name: Apply Patches V8
+        run: sh appy_patch.sh
+
+      - name: Build  V8
+        run: sh buid.sh
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist
