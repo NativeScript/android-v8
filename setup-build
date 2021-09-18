@@ -1,7 +1,8 @@
 #!/bin/bash
+CONFIGFILE=./persistent.vars
 
-if [ -z "$1" ]
-then echo "V8 tag to fetch requried" && exit -1
+if [ -z "$1" ]; then 
+    echo "V8 tag to fetch requried" && exit -1
 fi
 ndk='19c'
 
@@ -10,12 +11,16 @@ cd ..
 # get depot tools [more](https://www.chromium.org/developers/how-tos/install-depot-tools) : 
 git clone https://chromium.googlesource.com/chromium/tools/ .git
 export PATH=`pwd`/depot_tools:$PATH
+echo PATH=`pwd`/depot_tools:$PATH > ${CONFIGFILE}
 
 # make sure you have these packages installed
-read -p "Do you want to install neeed apt-get packages? " -n 1 -r
+read -p "Do you want to install neeed apt-get packages? " -N 1 -r -t 3
 echo
-if [[ $REPLY =~ ^[Yy]$ ]]
-then sudo apt-get install curl libc6-dev-i386 g++-multilib libstdc++6-4.8-dev ninja-build
+if [ $? -eq 124 ] ; then
+else
+    if [[ $REPLY =~ ^[Yy]$ ]]; then 
+        sudo apt-get install curl libc6-dev-i386 g++-multilib libstdc++6-4.8-dev ninja-build
+    fi
 fi
 
 
@@ -30,7 +35,7 @@ fi
 
 
 # Export ANDROID_NDK environment variable
-export ANDROID_NDK=`pwd`/ndk$ndk/android-ndk-r$ndk/
+echo ANDROID_NDK=`pwd`/ndk$ndk/android-ndk-r$ndk/ > ${CONFIGFILE}
 
 
 # fetch v8 (this will create a `v8` repo folder)

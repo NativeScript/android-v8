@@ -21,13 +21,15 @@ jobs:
           sudo ln -fs /usr/share/zoneinfo/UTC /etc/localtime
           sudo apt-get update
           sudo apt-get upgrade -y
-          sudo apt-get install curl build-essential g++-multilib ninja-build
+          sudo apt-get install curl build-essential g++-multilib
           git config --global user.email "git@job.com"; git config --global user.name "GitJob"
+
+      - name: Setup Build  V8
+        run: |
+          sh ./setup-build 9.2.230.18
 
       - name: Build  V8
         run: |
-          ./setup-build.sh 9.2.230.18
-          export
           ./build.sh
 
       - uses: actions/upload-artifact@v2
