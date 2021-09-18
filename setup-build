@@ -48,10 +48,10 @@ ln -fs $ANDROID_NDK third_party/android_tools/ndk
 # cp ../android-v8/build_fat build_fat
 
 # list the target tag
-git branch --remotes | grep branch-heads/$1
+git branch --remotes | grep $1
 
 # checkout tag 
-git checkout branch-heads/$1
+git checkout $1
 
 echo "=========================================="
 echo
