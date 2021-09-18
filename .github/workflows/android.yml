@@ -18,9 +18,6 @@ jobs:
       - name: Setup Build V8 9.2.230.18
         run: sh setup-build 9.2.230.18
 
-      - name: Apply Patches V8
-        run: sh appy_patch.sh
-
       - name: Build  V8
         run: sh buid.sh
 
