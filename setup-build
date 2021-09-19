@@ -62,13 +62,15 @@ git apply --cached ../android-v8/9.2.230.18.patch
 
 # Link ndk dir into v8 source path
 rm -rf third_party/android_tools third_party/android_ndk
-mkdir third_party/android_tools
+mkdir -p third_party/android_tools
 ln -s $ANDROID_NDK third_party/android_tools/ndk
 ln -s $ANDROID_NDK third_party/android_ndk
 
 ls $ANDROID_NDK
-ls third_party/android_tools/ndk
-ls third_party/android_ndk
+ls -l third_party
+ls -l third_party/android_tools
+ls -l third_party/android_tools/ndk
+ls -l third_party/android_ndk
 cp -f BUILD.gn third_party/android_ndk
 
 cat ${CONFIGFILE}
