@@ -65,10 +65,10 @@ rm -rf third_party/android_tools third_party/android_ndk
 mkdir third_party/android_tools
 ln -s $ANDROID_NDK third_party/android_tools/ndk
 ln -s $ANDROID_NDK third_party/android_ndk
-ln -fs $ANDROID_NDK third_party/android_tools/ndk
 
+ls $ANDROID_NDK
 ls third_party/android_tools/ndk
-cat BUILD.gn
+ls third_party/android_ndk
 cp -f BUILD.gn third_party/android_ndk
 
 cat ${CONFIGFILE}
