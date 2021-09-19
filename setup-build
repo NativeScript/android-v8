@@ -35,7 +35,8 @@ fi
 
 
 # Export ANDROID_NDK environment variable
-echo ANDROID_NDK=`pwd`/ndk$ndk/android-ndk-r$ndk/ >> ${CONFIGFILE}
+export ANDROID_NDK=`pwd`/ndk$ndk/android-ndk-r$ndk
+echo ANDROID_NDK=`pwd`/ndk$ndk/android-ndk-r$ndk >> ${CONFIGFILE}
 
 
 # fetch v8 (this will create a `v8` repo folder)
