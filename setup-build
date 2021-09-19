@@ -44,8 +44,6 @@ fetch v8
 # copy `build_fat` script in `v8` directory
 cd v8
 
-
-
 # cp ../android-v8/build_fat build_fat
 
 # list the target tag
@@ -63,12 +61,15 @@ git apply --cached ../android-v8/9.2.230.18.patch
 
 
 # Link ndk dir into v8 source path
-cp BUILD.gn $ANDROID_NDK
 rm -rf third_party/android_tools third_party/android_ndk
 mkdir third_party/android_tools
 ln -s $ANDROID_NDK third_party/android_tools/ndk
 ln -s $ANDROID_NDK third_party/android_ndk
 ln -fs $ANDROID_NDK third_party/android_tools/ndk
+
+ls third_party/android_tools/ndk
+cat BUILD.gn
+cp -f BUILD.gn third_party/android_ndk
 
 cat ${CONFIGFILE}
 
