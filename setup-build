@@ -1,5 +1,5 @@
 #!/bin/bash
-CONFIGFILE=`pwd`/../persistent.vars
+CONFIGFILE=`pwd`/persistent.vars
 
 if [ -z "$1" ]; then 
     echo "V8 tag to fetch requried" && exit -1
@@ -35,8 +35,7 @@ fi
 
 
 # Export ANDROID_NDK environment variable
-echo "\n" > ${CONFIGFILE}
-echo ANDROID_NDK=`pwd`/ndk$ndk/android-ndk-r$ndk/ > ${CONFIGFILE}
+echo ANDROID_NDK=`pwd`/ndk$ndk/android-ndk-r$ndk/ >> ${CONFIGFILE}
 
 
 # fetch v8 (this will create a `v8` repo folder)

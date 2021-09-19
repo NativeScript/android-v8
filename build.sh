@@ -1,8 +1,9 @@
 #!/bin/bash
 
-CONFIGFILE=`pwd`/../persistent.vars
+CONFIGFILE=`pwd`/persistent.vars
 if [ -r ${CONFIGFILE} ]; then
         echo "found ${CONFIGFILE}"
+        cat ${CONFIGFILE}
         # Read the configfile if it's existing and readable
         source ${CONFIGFILE}
 fi
