@@ -1,10 +1,6 @@
 name: Build for Android
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
+on: [push]
 
 env:
   CACHE_KEY_SUFFIX: v2
@@ -12,6 +8,13 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: kudo/ubuntu-nonroot:20.04
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        TZ: UTC
+        NO_INTL: ${{ contains(matrix.variant, 'nointl') }}
+        NO_JIT: ${{ !contains(matrix.variant, 'jit') }}
 
     steps:
       - uses: actions/checkout@v2
