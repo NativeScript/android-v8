@@ -1,12 +1,6 @@
 #!/bin/bash
 
-CONFIGFILE=`pwd`/persistent.vars
-if [ -r ${CONFIGFILE} ]; then
-        echo "found ${CONFIGFILE}"
-        cat ${CONFIGFILE}
-        # Read the configfile if it's existing and readable
-        source ${CONFIGFILE}
-fi
+source $(dirname $0)/env.sh
 ## prepare configuration
 
 SNAPSHOT_PREFIX="snapshot-"
@@ -31,7 +25,7 @@ BUILD_DIR_PREFIX="outgn"
 
 BUILD_TYPE="release"
 
-cd ../v8
+cd ${V8_DIR}
 if [[ $1 == "debug" ]] ;then
         BUILD_TYPE="debug"
 fi
@@ -63,8 +57,7 @@ do
 
         echo "build finished in $SECONDS seconds"
 
-        DIST="./dist/"
-        mkdir -p $DIST/$CURRENT_ARCH-$BUILD_TYPE
+        mkdir -p $DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE
 
         CURRENT_BUILD_TOOL=${NDK_BUILD_TOOLS_ARR[$COUNT]}
         COUNT=$COUNT+1
@@ -93,7 +86,7 @@ do
         THIRD_PARTY_OUT=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/buildtools/third_party
         LAST_PARAM="${LAST_PARAM} $THIRD_PARTY_OUT/libc++/libc++/*.o $THIRD_PARTY_OUT/libc++abi/libc++abi/*.o"
 
-        eval $CURRENT_BUILD_TOOL/ar r $DIST/$CURRENT_ARCH-$BUILD_TYPE/libv8.a "${LAST_PARAM}"
+        eval $CURRENT_BUILD_TOOL/ar r $DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE/libv8.a "${LAST_PARAM}"
 
         # echo "=================================="
         # echo "=================================="
