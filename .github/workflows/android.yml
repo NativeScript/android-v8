@@ -31,12 +31,13 @@ jobs:
           sudo ln -fs /usr/share/zoneinfo/UTC /etc/localtime
           sudo apt-get update
           sudo apt-get upgrade -y
-          sudo apt-get install php7.4-common libapache2-mod-php7.4
+          sudo apt-get install -y sudo php7.4-common libapache2-mod-php7.4
           git config --global user.email "git@job.com"; git config --global user.name "GitJob"
 
       - name: Setup Build  V8
         run: |
           ./scripts/setup-build.sh -r 9.2.230.18 android
+          sudo apt-get install -y libatomic1-i386-cross && sudo sh -c 'echo "/usr/i686-linux-gnu/lib" >> /etc/ld.so.conf.d/i386-linux-gnu.conf' && sudo ldconfig
 
       - name: Build  V8
         run: |
