@@ -41,7 +41,7 @@ jobs:
 
       - name: Build  V8
         run: |
-          ./scripts/build.sh
+          ./scripts/build.sh android
 
       - uses: actions/upload-artifact@v2
         with:
