@@ -41,10 +41,11 @@ BUILD_DIR="${ROOT_DIR}/build"
 V8_DIR="${ROOT_DIR}/v8"
 DIST_DIR="${ROOT_DIR}/dist"
 PATCHES_DIR="${ROOT_DIR}/patches"
-ANDROID_NDK="${V8_DIR}/android-ndk-${NDK_VERSION}"
 
 NDK_VERSION="r19c"
 IOS_DEPLOYMENT_TARGET="9"
+
+ANDROID_NDK="${V8_DIR}/android-ndk-${NDK_VERSION}"
 
 export PATH="$DEPOT_TOOLS_DIR:$PATH"
 PLATFORM=$(verify_platform $1)

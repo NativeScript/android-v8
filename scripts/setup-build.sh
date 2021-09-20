@@ -23,6 +23,7 @@ function installNDK() {
   unzip -q android-ndk-${NDK_VERSION}-linux-x86_64.zip
   rm -f android-ndk-${NDK_VERSION}-linux-x86_64.zip
   popd
+  ls -d ${V8_DIR}
 }
 
 if [[ ! -d "${DEPOT_TOOLS_DIR}" || ! -f "${DEPOT_TOOLS_DIR}/gclient" ]]; then
