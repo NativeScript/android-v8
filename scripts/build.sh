@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 source $(dirname $0)/env.sh
 ## prepare configuration
