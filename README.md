@@ -1,7 +1,6 @@
 # android-v8
 Contains the Google's V8 build used in android runtime.
 
-
 ### How to build (linux)
 
 * get depot tools [more](https://www.chromium.org/developers/how-tos/install-depot-tools) :
