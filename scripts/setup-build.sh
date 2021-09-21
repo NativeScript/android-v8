@@ -53,14 +53,14 @@ if [[ ${PLATFORM} = "android" ]]; then
   # Reset changes after installation
   patch -d "${V8_DIR}" -p1 -R < "${PATCHES_DIR}/prebuild_no_snapd.patch"
 
-  # Apply N Patches
-  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/9.2.230.18.patch"
-
   # Workaround to install missing sysroot
   gclient sync
 
   # Workaround to install missing android_sdk tools
   gclient sync --deps=android ${GCLIENT_SYNC_ARGS}
+
+  # Apply N Patches
+  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/9.2.230.18.patch"
 
   installNDK
   exit 0
