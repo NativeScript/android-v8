@@ -14,6 +14,26 @@ done
 shift $(expr ${OPTIND} - 1)
 
 source $(dirname $0)/env.sh
+GCLIENT_SYNC_ARGS+=" --revision V8_VERSION"
+
+function verify_platform()
+{
+  local arg=$1
+  SUPPORTED_PLATFORMS=(android ios)
+  local valid_platform=
+  for platform in ${SUPPORTED_PLATFORMS[@]}
+  do
+    if [[ ${arg} = ${platform} ]]; then
+      valid_platform=${platform}
+    fi
+  done
+  if [[ -z ${valid_platform} ]]; then
+    echo "Invalid platfrom: ${arg}" >&2
+    exit 1
+  fi
+  echo ${valid_platform}
+}
+PLATFORM=$(verify_platform $1)
 
 # Install NDK
 function installNDK() {
@@ -39,6 +59,9 @@ fi
 
 if [[ ${PLATFORM} = "ios" ]]; then
   gclient sync --deps=ios ${GCLIENT_SYNC_ARGS}
+  # Apply N Patches
+  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/ios/build.patch"
+  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/ios/inspector.patch"
   exit 0
 fi
 
@@ -60,7 +83,8 @@ if [[ ${PLATFORM} = "android" ]]; then
   gclient sync --deps=android ${GCLIENT_SYNC_ARGS}
 
   # Apply N Patches
-  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/9.2.230.18.patch"
+  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/android/nativescript.patch"
+  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/android/inspector.patch"
 
   installNDK
   exit 0

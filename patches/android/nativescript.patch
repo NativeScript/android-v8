@@ -1,0 +1,195 @@
+diff --git a/BUILD.gn b/BUILD.gn
+index 5e3045bfdc..081b3f9476 100644
+--- a/BUILD.gn
++++ b/BUILD.gn
+@@ -3619,6 +3619,8 @@ v8_source_set("v8_base_without_compiler") {
+ 
+   sources = [
+     ### gcmole(all) ###
++    "src/V8NativeScriptExtension.h",
++    "src/V8NativeScriptExtension.cc",
+     "src/api/api-arguments.cc",
+     "src/api/api-natives.cc",
+     "src/api/api.cc",
+
+diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
+new file mode 100644
+index 0000000000..01f503a51a
+--- /dev/null
++++ b/src/V8NativeScriptExtension.cc
+@@ -0,0 +1,146 @@
++#include "V8NativeScriptExtension.h"
++#include "objects/objects-inl.h"
++#include "objects/contexts.h"
++#include "objects/keys.h"
++#include "api/api-inl.h"
++#include "common/checks.h"
++#include "common/globals.h"
++#include "handles/handles.h"
++#include "codegen/assembler.h"
++#include <assert.h>
++
++using namespace v8;
++
++template<typename T>
++class unsafe_arr
++{
++public:
++	unsafe_arr()
++		: m_capacity(16), m_size(0)
++	{
++		m_data = alloc_data(m_capacity);
++	}
++
++	void push_back(const T& e)
++	{
++		if (m_size == m_capacity)
++		{
++			resize();
++		}
++		m_data[m_size++] = e;
++	}
++
++	T* data() const
++	{
++		return m_data;
++	}
++
++	size_t size() const
++	{
++		return m_size;
++	}
++
++	static void release_data(T *data)
++	{
++		free(data);
++	}
++
++private:
++	T* alloc_data(size_t size)
++	{
++		T *data = reinterpret_cast<T*>(malloc(size * sizeof(T)));
++		return data;
++	}
++
++	void resize()
++	{
++		size_t capacity = 2 * m_capacity;
++		T *data = alloc_data(capacity);
++		size_t size = m_size * sizeof(T);
++		memcpy(data, m_data, size);
++		release_data(m_data);
++		m_data = data;
++		m_capacity = capacity;
++	}
++
++	size_t m_capacity;
++	size_t m_size;
++	T *m_data;
++};
++
++
++NativeScriptExtension::NativeScriptExtension()
++{
++}
++
++
++unsigned long NativeScriptExtension::GetAddress(const Local<Object>& obj)
++{
++	i::Handle<i::JSReceiver> h = Utils::OpenHandle(*obj);
++
++	return h->address();
++}
++
++
++void NativeScriptExtension::ReleaseClosureObjects(Local<Value>* closureObjects)
++{
++	unsafe_arr<Local<Value>>::release_data(closureObjects);
++}
++
++
++void NativeScriptExtension::GetAssessorPair(Isolate* isolate, const Local<Object>& obj, const Local<String>& propName, Local<Value>& getter, Local<Value>& setter)
++{
++	i::Handle<i::JSObject> o = i::Handle<i::JSObject>::cast(Utils::OpenHandle(*obj));
++
++	i::Handle<i::String> intname = Utils::OpenHandle(*propName);
++
++	//Isolate* isolate = object->GetIsolate();
++	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
++
++	internal::LookupIterator it(internal_isolate, o, intname, internal::LookupIterator::OWN);
++	i::Handle<i::Object> maybe_pair = it.GetAccessors();
++	i::MaybeHandle<i::NativeContext> native_context = it.GetHolder<i::JSReceiver>()->GetCreationContext();
++
++	if (!native_context.is_null()){
++		
++	i::MaybeHandle<i::Object> g = internal::AccessorPair::GetComponent(internal_isolate, native_context.ToHandleChecked(), i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_GETTER);
++	if (!g.is_null())
++	{
++		getter = Utils::ToLocal(g.ToHandleChecked());
++	}
++
++	i::MaybeHandle<i::Object> s = internal::AccessorPair::GetComponent(internal_isolate, native_context.ToHandleChecked(), i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_SETTER);
++	if (!s.is_null())
++	{
++		setter = Utils::ToLocal(s.ToHandleChecked());
++	}
++	}
++}
++
++
++std::vector<Local<Value>> NativeScriptExtension::GetPropertyKeys(Isolate* isolate, const Local<Object>& object)
++{
++	i::Handle<i::JSObject> obj = i::Handle<i::JSObject>::cast(Utils::OpenHandle(*object));
++	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
++
++	i::Handle<i::FixedArray> arr = i::KeyAccumulator::GetOwnEnumPropertyKeys(internal_isolate, obj);
++
++	int len = arr->length();
++
++	std::vector<Local<Value>> keys(len);
++	for (int i = 0; i < len; i++)
++	{
++		i::Handle<i::Object> elem = i::Handle<i::Object>(arr->get(i), obj->GetIsolate());
++		Local<Value> val = Utils::ToLocal(elem);
++			if (!val.IsEmpty())
++			{
++				keys.push_back(val);
++			}
++	}
++
++	return keys;
++}
++
++void NativeScriptExtension::CpuFeaturesProbe(bool cross_compile) {
++	i::CpuFeatures::Probe(cross_compile);
++}
+\ No newline at end of file
+diff --git a/src/V8NativeScriptExtension.h b/src/V8NativeScriptExtension.h
+new file mode 100644
+index 0000000000..9c79c44060
+--- /dev/null
++++ b/src/V8NativeScriptExtension.h
+@@ -0,0 +1,21 @@
++#include <vector>
++#include "init/v8.h"
++#include "api/api.h"
++
++namespace v8 {
++
++	class NativeScriptExtension {
++	public:
++		static unsigned long GetAddress(const v8::Local<v8::Object>& obj);
++
++		static void ReleaseClosureObjects(v8::Local<v8::Value>* closureObjects);
++
++		static void GetAssessorPair(v8::Isolate* isolate, const v8::Local<v8::Object>& obj, const v8::Local<v8::String>& propName, v8::Local<v8::Value>& getter, v8::Local<v8::Value>& setter);
++
++		static std::vector<v8::Local<v8::Value>> GetPropertyKeys(v8::Isolate* isolate, const v8::Local<v8::Object>& object);
++
++		static void CpuFeaturesProbe(bool cross_compile);
++	private:
++		NativeScriptExtension();
++	};
++}
+\ No newline at end of file

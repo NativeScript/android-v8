@@ -3,8 +3,6 @@
 source $(dirname $0)/env.sh
 ## prepare configuration
 
-SNAPSHOT_PREFIX="snapshot-"
-
 if [ "$(uname)" == "Darwin" ]; then
         NDK_BUILD_TOOLS_ARR=($ANDROID_NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/arm-linux-androideabi/bin \
                 $ANDROID_NDK/toolchains/aarch64-linux-android-4.9/prebuilt/darwin-x86_64/aarch64-linux-android/bin \
@@ -57,7 +55,6 @@ do
 
         SECONDS=0
         ninja -C $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE ${V8_FOLDERS[@]} inspector
-        #ninja -C $BUILD_DIR_PREFIX/$SNAPSHOT_PREFIX$CURRENT_ARCH-$BUILD_TYPE run_mksnapshot_default
 
         echo "build finished in $SECONDS seconds"
 

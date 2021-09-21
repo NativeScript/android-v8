@@ -13,8 +13,6 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
         TZ: UTC
-        NO_INTL: ${{ contains(matrix.variant, 'nointl') }}
-        NO_JIT: ${{ !contains(matrix.variant, 'jit') }}
 
     steps:
       - name: Setup docker workspace
@@ -36,12 +34,12 @@ jobs:
 
       - name: Setup Build  V8
         run: |
-          ./scripts/setup-build.sh -r 9.2.230.18 android
+          ./scripts/setup-build.sh android
           sudo apt-get install -y libatomic1-i386-cross && sudo sh -c 'echo "/usr/i686-linux-gnu/lib" >> /etc/ld.so.conf.d/i386-linux-gnu.conf' && sudo ldconfig
 
       - name: Build  V8
         run: |
-          ./scripts/build.sh android
+          ./scripts/build.android.sh
 
       - uses: actions/upload-artifact@v2
         with:

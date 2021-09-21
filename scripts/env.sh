@@ -14,23 +14,6 @@ function abs_path()
   echo `$readlink $1`
 }
 
-function verify_platform()
-{
-  local arg=$1
-  SUPPORTED_PLATFORMS=(android ios)
-  local valid_platform=
-  for platform in ${SUPPORTED_PLATFORMS[@]}
-  do
-    if [[ ${arg} = ${platform} ]]; then
-      valid_platform=${platform}
-    fi
-  done
-  if [[ -z ${valid_platform} ]]; then
-    echo "Invalid platfrom: ${arg}" >&2
-    exit 1
-  fi
-  echo ${valid_platform}
-}
 
 CURR_DIR=$(dirname $(abs_path $0))
 ROOT_DIR=$(dirname ${CURR_DIR})
@@ -42,11 +25,11 @@ V8_DIR="${ROOT_DIR}/v8"
 DIST_DIR="${ROOT_DIR}/dist"
 PATCHES_DIR="${ROOT_DIR}/patches"
 
-NDK_VERSION="r19c"
+V8_VERSION="9.3.345.19"
+NDK_VERSION="r23"
 NDK_API_LEVEL="19"
 IOS_DEPLOYMENT_TARGET="9"
 
 ANDROID_NDK="${V8_DIR}/android-ndk-${NDK_VERSION}"
 
 export PATH="$DEPOT_TOOLS_DIR:$PATH"
-PLATFORM=$(verify_platform $1)
