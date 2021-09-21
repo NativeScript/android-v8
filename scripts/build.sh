@@ -20,7 +20,7 @@ fi
 # The order of CPU architectures in this array must be the same
 # as the order of NDK tools in the NDK_BUILD_TOOLS_ARR array
 # ARCH_ARR=(arm arm64 x86 x64)
-ARCH_ARR=(arm)
+ARCH_ARR=(arm64)
 
 BUILD_DIR_PREFIX="outgn"
 
@@ -37,12 +37,12 @@ do
                 gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="is_component_build=true v8_use_external_startup_data=true is_debug=true symbol_level=2 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false"
                # gn gen $BUILD_DIR_PREFIX/$SNAPSHOT_PREFIX$CURRENT_ARCH-$BUILD_TYPE --args="is_component_build=false v8_use_external_startup_data=true is_debug=true symbol_level=2 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false"
         else
-                # if [[ $date =~ 64$ ]] ;then
-                #         gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="is_clang=true enable_resource_allowlist_generation=false is_component_build=true v8_use_external_startup_data=true is_official_build=true use_thin_lto=false is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false"
-                # else
-
-                        gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="is_clang=true enable_resource_allowlist_generation=false is_component_build=true v8_use_external_startup_data=true is_official_build=true use_thin_lto=false is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false android32_ndk_api_level=$NDK_API_LEVEL android_ndk_major_version=$NDK_API_LEVEL android_sdk_platform_version=$NDK_API_LEVEL android_sdk_version=$NDK_API_LEVEL android64_ndk_api_level=$NDK_API_LEVEL"
-                # fi
+        ARGS = "is_clang=true enable_resource_allowlist_generation=false is_component_build=true v8_use_external_startup_data=true is_official_build=true use_thin_lto=false is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false"
+                if [[ $date =~ 64$ ]] ;then
+                        gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="$ARGS"
+                else
+                        gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="$ARGS android32_ndk_api_level=$NDK_API_LEVEL android_ndk_major_version=$NDK_API_LEVEL android_sdk_platform_version=$NDK_API_LEVEL android_sdk_version=$NDK_API_LEVEL android64_ndk_api_level=$NDK_API_LEVEL"
+                fi
                # gn gen $BUILD_DIR_PREFIX/$SNAPSHOT_PREFIX$CURRENT_ARCH-$BUILD_TYPE --args="enable_resource_allowlist_generation=false is_component_build=false v8_use_external_startup_data=true is_official_build=true use_thin_lto=false is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false"
 
         fi
