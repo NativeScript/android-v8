@@ -60,7 +60,7 @@ fi
 if [[ ${PLATFORM} = "ios" ]]; then
   gclient sync --deps=ios ${GCLIENT_SYNC_ARGS}
   # Apply N Patches
-  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/android/9.2.230.18.patch"
+  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/ios/9.2.230.18.patch"
   exit 0
 fi
 
