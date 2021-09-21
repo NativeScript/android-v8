@@ -60,8 +60,7 @@ fi
 if [[ ${PLATFORM} = "ios" ]]; then
   gclient sync --deps=ios ${GCLIENT_SYNC_ARGS}
   # Apply N Patches
-  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/ios/build.patch"
-  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/ios/inspector.patch"
+  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/android/9.2.230.18.patch"
   exit 0
 fi
 
@@ -83,8 +82,7 @@ if [[ ${PLATFORM} = "android" ]]; then
   gclient sync --deps=android ${GCLIENT_SYNC_ARGS}
 
   # Apply N Patches
-  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/android/nativescript.patch"
-  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/android/inspector.patch"
+  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/android/9.2.230.18.patch"
 
   installNDK
   exit 0
