@@ -14,7 +14,7 @@ done
 shift $(expr ${OPTIND} - 1)
 
 source $(dirname $0)/env.sh
-GCLIENT_SYNC_ARGS+=" --revision V8_VERSION"
+GCLIENT_SYNC_ARGS+=" --revision $V8_VERSION"
 
 function verify_platform()
 {
