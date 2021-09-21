@@ -10,18 +10,18 @@ jobs:
     runs-on: macOS-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       - name: Setup Build  V8
-      run: |
-        brew install coreutils
-        scripts/setup-build.sh ios
+        run: |
+          brew install coreutils
+          scripts/setup-build.sh ios
 
-    - name: Build V8
-      run: |
-        ./scripts/build.ios.sh
+      - name: Build V8
+        run: |
+          ./scripts/build.ios.sh
 
-    - uses: actions/upload-artifact@v2
-      with:
-        name: dist
-        path: dist
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist
