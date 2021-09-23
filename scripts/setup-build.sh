@@ -60,7 +60,7 @@ fi
 if [[ ${PLATFORM} = "ios" ]]; then
   gclient sync --deps=ios ${GCLIENT_SYNC_ARGS}
 
-  cd "${V8_DIR}/src/tools/clang/dsymutil"
+  cd "${V8_DIR}/tools/clang/dsymutil"
   curl -O http://commondatastorage.googleapis.com/chromium-browser-clang-staging/Mac/dsymutil-354873-1.tgz
   tar -zxvf dsymutil-354873-1.tgz
   # Apply N Patches
