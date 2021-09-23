@@ -3819,7 +3819,8 @@ index 92bce2ad24..a314d29a07 100644
                  "domain": "Profiler"
              },
              {
-                 "domain": "HeapProfiler"
+                 "domain": "HeapProfiler",
+                 "async": ["collectGarbage"]
 +            },
 +            {
 +                "domain": "Log"
