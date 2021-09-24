@@ -21,6 +21,10 @@ jobs:
         run: |
           ./scripts/build.ios.sh
 
+      - name: Build V8 catalyst
+        run: |
+          ./scripts/build.ios.sh -c
+
       - uses: actions/upload-artifact@v2
         with:
           name: dist
