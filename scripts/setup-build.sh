@@ -86,7 +86,7 @@ if [[ ${PLATFORM} = "android" ]]; then
   gclient sync --deps=android ${GCLIENT_SYNC_ARGS}
 
   # Apply N Patches
-  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/android/9.2.230.18.patch"
+  patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/android/main.patch"
   # patch -d "${V8_DIR}" -p1 < "${PATCHES_DIR}/android/main.patch"
 
   installNDK
