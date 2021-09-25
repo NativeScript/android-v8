@@ -21,7 +21,7 @@ else
     ARCH_ARR=(x64-simulator arm64-simulator arm64-device)
 fi
 
-MODULES=(v8_base_without_compiler v8_compiler v8_libplatform v8_libbase v8_bigint v8_snapshot torque_generated_initializers torque_generated_definitions)
+MODULES=(v8_base v8_base_without_compiler v8_compiler v8_libplatform)
 
 for CURRENT_ARCH in ${ARCH_ARR[@]}
 do
@@ -73,8 +73,13 @@ do
     ARCH_PARTS=(${CURRENT_ARCH//-/ })
     ARCH=${ARCH_PARTS[0]}
     if [ $ARCH = "arm64" ]; then
-        ZLIB_INPUT="$ZLIB_INPUT $OUTFOLDER/obj/third_party/zlib/zlib_adler32_simd/*.o"
-        ZLIB_INPUT="$ZLIB_INPUT $OUTFOLDER/obj/third_party/zlib/zlib_inflate_chunk_simd/*.o"
+        if [[ ${CATALYST} = "1" ]]; then
+            ZLIB_INPUT="$ZLIB_INPUT $OUTFOLDER/obj/third_party/zlib/zlib_adler32_simd/*.o"
+            ZLIB_INPUT="$ZLIB_INPUT $OUTFOLDER/obj/third_party/zlib/zlib_inflate_chunk_simd/*.o"
+        else 
+            ZLIB_INPUT="$ZLIB_INPUT $OUTFOLDER/obj/third_party/zlib/zlib_adler32_simd/*.o"
+            ZLIB_INPUT="$ZLIB_INPUT $OUTFOLDER/obj/third_party/zlib/zlib_inflate_chunk_simd/*.o"
+        fi
     fi
 
     ZLIB_INPUT="$ZLIB_INPUT $OUTFOLDER/obj/third_party/zlib/google/compression_utils_portable/*.o"

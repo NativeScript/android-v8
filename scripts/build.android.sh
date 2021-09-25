@@ -51,7 +51,7 @@ for CURRENT_ARCH in ${ARCH_ARR[@]}
 do
 
         # make fat build
-        V8_FOLDERS=(v8_compiler v8_base_without_compiler v8_libplatform v8_snapshot v8_libbase v8_bigint torque_generated_initializers torque_generated_definitions)
+        V8_FOLDERS=(v8_base v8_base_without_compiler v8_compiler v8_libplatform)
 
         SECONDS=0
         ninja -C $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE ${V8_FOLDERS[@]} inspector
