@@ -17,9 +17,9 @@ jobs:
           brew install coreutils
           scripts/setup-build.sh ios
 
-      - name: Build V8
+      - name: Build V8 catalyst
         run: |
-          ./scripts/build.ios.sh
+          ./scripts/build.ios.sh -c
 
       - uses: actions/upload-artifact@v2
         with:
