@@ -1,4 +1,4 @@
-name: Build for iOS
+name: Build for iOS Catalyst
 
 on: [workflow_dispatch]
 
