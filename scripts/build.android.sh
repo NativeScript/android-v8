@@ -52,7 +52,7 @@ for CURRENT_ARCH in ${ARCH_ARR[@]}
 do
 
         # make fat build
-        V8_FOLDERS=(v8_base v8_base_without_compiler v8_compiler v8_libplatform)
+        V8_FOLDERS=(v8_base_without_compiler v8_libbase v8_libplatform)
 
         SECONDS=0
         ninja -C $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE ${V8_FOLDERS[@]} inspector
@@ -61,34 +61,38 @@ do
 
         mkdir -p $DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE
 
+        OUTFOLDER=${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}
         CURRENT_BUILD_TOOL=${NDK_BUILD_TOOLS_ARR[$COUNT]}
         COUNT=$COUNT+1
         V8_FOLDERS_LEN=${#V8_FOLDERS[@]}
         LAST_PARAM=""
         for CURRENT_V8_FOLDER in ${V8_FOLDERS[@]}
         do
-        LAST_PARAM="${LAST_PARAM} ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/${CURRENT_V8_FOLDER}/*.o"
+        LAST_PARAM="${LAST_PARAM} ${OUTFOLDER}/obj/${CURRENT_V8_FOLDER}/*.o"
         done
 
-        LAST_PARAM="${LAST_PARAM} ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/third_party/inspector_protocol/crdtp/*.o ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/third_party/inspector_protocol/crdtp_platform/*.o"
-        LAST_PARAM="${LAST_PARAM} ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/third_party/zlib/zlib/*.o ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/third_party/zlib/zlib_adler32_simd/*.o ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/third_party/zlib/google/compression_utils_portable/*.o ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/third_party/zlib/zlib_inflate_chunk_simd/*.o ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/third_party/android_ndk/cpu_features/*.o"
-        
-        
-        LAST_PARAM="${LAST_PARAM} ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/cppgc_base/*.o ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/v8_cppgc_shared/*.o"
+        ZLIB_INPUT="$OUTFOLDER/obj/third_party/zlib/zlib/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib_adler32_simd/*.o ${OUTFOLDER}/obj/third_party/zlib/google/compression_utils_portable/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib_inflate_chunk_simd/*.o"
+
+        LAST_PARAM="${LAST_PARAM}  ${OUTFOLDER}/obj/third_party/android_ndk/cpu_features/*.o"
+        LAST_PARAM="${LAST_PARAM} ${OUTFOLDER}/obj/cppgc_base/*.o ${OUTFOLDER}/obj/v8_cppgc_shared/*.o"
         
         
         if [[ $CURRENT_ARCH = "arm" || $CURRENT_ARCH = "arm64" ]]; then
-                LAST_PARAM="${LAST_PARAM} ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/third_party/zlib/zlib_arm_crc32/*.o"
+                ZLIB_INPUT="${ZLIB_INPUT} ${OUTFOLDER}/obj/third_party/zlib/zlib_arm_crc32/*.o"
         fi
 
         if [[ $CURRENT_ARCH = "x86" || $CURRENT_ARCH = "x64" ]]; then
-                LAST_PARAM="${LAST_PARAM} ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/third_party/zlib/zlib_x86_simd/*.o ${BUILD_DIR_PREFIX}/${CURRENT_ARCH}-${BUILD_TYPE}/obj/third_party/zlib/zlib_crc32_simd/*.o"
+                LAST_PARAM="${LAST_PARAM} ${OUTFOLDER}/obj/third_party/zlib/zlib_x86_simd/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib_crc32_simd/*.o"
         fi
 
         THIRD_PARTY_OUT=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/buildtools/third_party
         LAST_PARAM="${LAST_PARAM} $THIRD_PARTY_OUT/libc++/libc++/*.o $THIRD_PARTY_OUT/libc++abi/libc++abi/*.o"
 
+        eval $CURRENT_BUILD_TOOL/ar r $DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE/libzip.a $ZLIB_INPUT
+        
         eval $CURRENT_BUILD_TOOL/ar r $DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE/libv8.a "${LAST_PARAM}"
+
+        $CURRENT_BUILD_TOOL/ar r $DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE/libinspector_protocol.a $OUTFOLDER/obj/third_party/inspector_protocol/crdtp/*.o $OUTFOLDER/obj/third_party/inspector_protocol/crdtp_platform/*.o
 
         # echo "=================================="
         # echo "=================================="
