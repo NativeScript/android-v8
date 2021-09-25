@@ -17,8 +17,8 @@ fi
 
 # The order of CPU architectures in this array must be the same
 # as the order of NDK tools in the NDK_BUILD_TOOLS_ARR array
-ARCH_ARR=(arm64)
-# ARCH_ARR=(arm arm64 x86 x64)
+# ARCH_ARR=(arm64)
+ARCH_ARR=(arm arm64 x86 x64)
 
 BUILD_DIR_PREFIX="outgn"
 
@@ -35,7 +35,7 @@ do
                 gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="is_component_build=true v8_use_external_startup_data=true is_debug=true symbol_level=2 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false"
                # gn gen $BUILD_DIR_PREFIX/$SNAPSHOT_PREFIX$CURRENT_ARCH-$BUILD_TYPE --args="is_component_build=false v8_use_external_startup_data=true is_debug=true symbol_level=2 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false"
         else
-                ARGS="is_clang=true enable_resource_allowlist_generation=false is_component_build=true v8_use_external_startup_data=false is_official_build=true use_thin_lto=false is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false use_custom_libcxx=false"
+                ARGS="is_clang=true enable_resource_allowlist_generation=false is_component_build=true v8_use_external_startup_data=false is_official_build=true use_thin_lto=false is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false"
                 if [[ $CURRENT_ARCH =~ 64$ ]] ;then
                         gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="$ARGS"
                 else
@@ -52,7 +52,7 @@ for CURRENT_ARCH in ${ARCH_ARR[@]}
 do
 
         # make fat build
-        V8_FOLDERS=(v8_base_without_compiler v8_libbase v8_libplatform)
+        V8_FOLDERS=(v8_base_without_compiler v8_libbase v8_libplatform v8_cppgc_shared v8_bigint)
 
         SECONDS=0
         ninja -C $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE ${V8_FOLDERS[@]} inspector
@@ -74,7 +74,7 @@ do
         ZLIB_INPUT="$OUTFOLDER/obj/third_party/zlib/zlib/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib_adler32_simd/*.o ${OUTFOLDER}/obj/third_party/zlib/google/compression_utils_portable/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib_inflate_chunk_simd/*.o"
 
         LAST_PARAM="${LAST_PARAM}  ${OUTFOLDER}/obj/third_party/android_ndk/cpu_features/*.o"
-        LAST_PARAM="${LAST_PARAM} ${OUTFOLDER}/obj/cppgc_base/*.o ${OUTFOLDER}/obj/v8_cppgc_shared/*.o"
+        LAST_PARAM="${LAST_PARAM} ${OUTFOLDER}/obj/cppgc_base/*.o"
         
         
         if [[ $CURRENT_ARCH = "arm" || $CURRENT_ARCH = "arm64" ]]; then
@@ -85,12 +85,12 @@ do
                 LAST_PARAM="${LAST_PARAM} ${OUTFOLDER}/obj/third_party/zlib/zlib_x86_simd/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib_crc32_simd/*.o"
         fi
 
-        # THIRD_PARTY_OUT=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/buildtools/third_party
-        # LAST_PARAM="${LAST_PARAM} $THIRD_PARTY_OUT/libc++/libc++/*.o $THIRD_PARTY_OUT/libc++abi/libc++abi/*.o"
+        THIRD_PARTY_OUT=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/buildtools/third_party
+        LAST_PARAM="${LAST_PARAM} $THIRD_PARTY_OUT/libc++/libc++/*.o $THIRD_PARTY_OUT/libc++abi/libc++abi/*.o"
 
         $CURRENT_BUILD_TOOL/ar r $DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE/libzip.a $ZLIB_INPUT
         
-        $CURRENT_BUILD_TOOL/ar r $DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE/libv8.a "${LAST_PARAM}"
+        $CURRENT_BUILD_TOOL/ar r $DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE/libv8.a ${LAST_PARAM}
 
         $CURRENT_BUILD_TOOL/ar r $DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE/libinspector_protocol.a $OUTFOLDER/obj/third_party/inspector_protocol/crdtp/*.o $OUTFOLDER/obj/third_party/inspector_protocol/crdtp_platform/*.o
 
