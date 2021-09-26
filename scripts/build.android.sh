@@ -17,8 +17,8 @@ fi
 
 # The order of CPU architectures in this array must be the same
 # as the order of NDK tools in the NDK_BUILD_TOOLS_ARR array
-# ARCH_ARR=(arm64)
-ARCH_ARR=(arm arm64 x86 x64)
+ARCH_ARR=(arm64)
+# ARCH_ARR=(arm arm64 x86 x64)
 
 BUILD_DIR_PREFIX="outgn"
 
