@@ -1,6 +1,16 @@
 #!/bin/bash -e
 
 source $(dirname $0)/env.sh
+
+ARCH_ARR=(arm arm64 x86 x64)
+while getopts 'l' opt; do
+  case ${opt} in
+    l)
+      ARCH_ARR=($OPTARG)
+      ;;
+  esac
+done
+shift $(expr ${OPTIND} - 1)
 ## prepare configuration
 
 if [ "$(uname)" == "Darwin" ]; then
@@ -17,7 +27,6 @@ fi
 
 # The order of CPU architectures in this array must be the same
 # as the order of NDK tools in the NDK_BUILD_TOOLS_ARR array
-ARCH_ARR=(arm arm64 x86 x64)
 
 BUILD_DIR_PREFIX="outgn"
 
@@ -33,7 +42,7 @@ do
         if [[ $BUILD_TYPE == "debug" ]] ;then
                 gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="is_component_build=true v8_use_external_startup_data=true is_debug=true symbol_level=2 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false"
         else
-                ARGS="is_clang=true enable_resource_allowlist_generation=false is_component_build=true v8_use_external_startup_data=false is_official_build=true use_thin_lto=false is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false use_custom_libcxx=true"
+                ARGS="use_goma=false is_clang=true enable_resource_allowlist_generation=false is_component_build=true v8_use_external_startup_data=false is_official_build=true use_thin_lto=false is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false use_custom_libcxx=true cc_wrapper=\"ccache\""
                 if [[ $CURRENT_ARCH =~ 64$ ]] ;then
                         gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="$ARGS"
                 else
@@ -50,7 +59,9 @@ do
 
         # make fat build
         V8_FOLDERS=(v8_compiler v8_base_without_compiler v8_libplatform v8_snapshot v8_libbase v8_bigint torque_generated_initializers torque_generated_definitions)
-
+        export CCACHE_CPP2=yes
+	export CCACHE_SLOPPINESS=time_macros
+	export PATH=$V8_DIR/third_party/llvm-build/Release+Asserts/bin:$PATH
         SECONDS=0
         ninja -C $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE ${V8_FOLDERS[@]} inspector
 
@@ -68,7 +79,9 @@ do
         LAST_PARAM="${LAST_PARAM} ${OUTFOLDER}/obj/${CURRENT_V8_FOLDER}/*.o"
         done
 
-        LAST_PARAM="${LAST_PARAM} $OUTFOLDER/obj/third_party/inspector_protocol/crdtp/*.o $OUTFOLDER/obj/third_party/inspector_protocol/crdtp_platform/*.o"
+        $CURRENT_BUILD_TOOL/ar r $OUTFOLDER/obj/third_party/inspector_protocol/libinspector_protocol.a $OUTFOLDER/obj/third_party/inspector_protocol/crdtp/*.o $OUTFOLDER/obj/third_party/inspector_protocol/crdtp_platform/*.o
+        cp "$OUTFOLDER/obj/third_party/inspector_protocol/libinspector_protocol.a" "$DIST_DIR/${CURRENT_ARCH}${DIST_SUFFIX}"
+
         LAST_PARAM="${LAST_PARAM} $OUTFOLDER/obj/third_party/zlib/zlib/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib_adler32_simd/*.o ${OUTFOLDER}/obj/third_party/zlib/google/compression_utils_portable/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib_inflate_chunk_simd/*.o"
 
         LAST_PARAM="${LAST_PARAM} ${OUTFOLDER}/obj/third_party/android_ndk/cpu_features/*.o"

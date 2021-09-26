@@ -2,18 +2,20 @@ name: Build for Android
 
 on: [workflow_dispatch]
 
-env:
-  CACHE_KEY_SUFFIX: v2
-  
 jobs:
   build:
+    strategy:
+      matrix:
+        arch: ['arm' ,'arm64' ,'x86' ,'x64']
     runs-on: ubuntu-latest
+    name: ${{ matrix.arch }}
     container:
       image: kudo/ubuntu-nonroot:20.04
       env:
         DEBIAN_FRONTEND: noninteractive
         TZ: UTC
-
+        CCACHE_DIR: ${{ github.workspace }}/.ccache
+        USE_CCACHE: 1
     steps:
       - name: Setup docker workspace
         run: |
@@ -29,7 +31,7 @@ jobs:
           sudo ln -fs /usr/share/zoneinfo/UTC /etc/localtime
           sudo apt-get update
           sudo apt-get upgrade -y
-          sudo apt-get install -y sudo apt-utils sudo lsb-core git python nodejs npm wget openjdk-8-jre openjdk-8-jdk
+          sudo apt-get install -y sudo apt-utils sudo ccache lsb-core git python nodejs npm wget openjdk-8-jre openjdk-8-jdk
           git config --global user.email "git@job.com"; git config --global user.name "GitJob"
 
       - name: Setup Build  V8
@@ -37,11 +39,23 @@ jobs:
           ./scripts/setup-build.sh android
           sudo apt-get install -y libatomic1-i386-cross && sudo sh -c 'echo "/usr/i686-linux-gnu/lib" >> /etc/ld.so.conf.d/i386-linux-gnu.conf' && sudo ldconfig
 
-      - name: Build  V8
-        run: |
-          ./scripts/build.android.sh
-
-      - uses: actions/upload-artifact@v2
+      - name: Retrieve ccache
+        uses: actions/cache@v2
         with:
-          name: dist
-          path: dist
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ runner.os }}-ccache-${{ matrix.arch }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-${{ matrix.arch }}-
+            ${{ runner.os }}-ccache-
+      - run: ./scripts/build.android.sh -l ${{ matrix.arch }}
+        name: Build
+
+      - name: Show summary of ccache configuration and statistics counters
+        run: ccache --show-stats
+
+      - name: Archive Build
+        uses: actions/upload-artifact@v2
+        with:
+          name: libv8-release-${{ matrix.arch }}
+          path: |
+            build/release/**
