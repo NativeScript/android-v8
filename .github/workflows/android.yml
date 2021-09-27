@@ -50,8 +50,8 @@ jobs:
             ${{ runner.os }}-ccache-${{ matrix.arch }}-
             ${{ runner.os }}-ccache-
 
-      - run: ./scripts/build.android.sh -l ${{ matrix.arch }}
-        name: Build
+      - name: Build
+        run: ./scripts/build.android.sh -l ${{ matrix.arch }}
 
       - name: Show summary of ccache configuration and statistics counters
         run: ccache --show-stats
