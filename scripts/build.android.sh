@@ -3,10 +3,10 @@
 source $(dirname $0)/env.sh
 
 ARCH_ARR=(arm arm64 x86 x64)
-while getopts 'l' opt; do
+while getopts 'l:' opt; do
   case ${opt} in
     l)
-      ARCH_ARR=($OPTARG)
+        ARCH_ARR=($OPTARG)
       ;;
   esac
 done
