@@ -49,6 +49,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-ccache-${{ matrix.arch }}-
             ${{ runner.os }}-ccache-
+
       - run: ./scripts/build.android.sh -l ${{ matrix.arch }}
         name: Build
 
