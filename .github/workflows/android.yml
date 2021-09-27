@@ -60,4 +60,93 @@ jobs:
         with:
           name: libv8-release-${{ matrix.arch }}
           path: |
-            build/release/**
+            dist/${{ matrix.arch }}-release/**
+            v8/outgn/${{ matrix.arch }}-release/gen
+            v8/outgn/${{ matrix.arch }}-release/gen/embedded.S
+            v8/outgn/${{ matrix.arch }}-release/gen/snapshot.cc
+
+  # Combine the various architecture builds with the headers and a custom libv8.json file
+  package:
+    runs-on: ubuntu-latest
+    name: Package
+    needs: build
+    
+    steps:
+      - uses: actions/checkout@v2
+
+     - name: Setup Ubuntu environment
+        run: |
+          sudo ln -fs /usr/share/zoneinfo/UTC /etc/localtime
+          sudo apt-get update
+          sudo apt-get upgrade -y
+          sudo apt-get install -y sudo apt-utils sudo git
+          git config --global user.email "git@job.com"; git config --global user.name "GitJob"
+
+      - name: Setup Build  V8
+        run: |
+          ./scripts/setup-build.sh
+
+      - run: mkdir -p 'build/release/libs' 'build/release/inspector' 'build/release/include/generated' 2>/dev/null
+      - run: |
+          cp -R 'v8/include/**' 'build/release/include'
+          cp -R 'v8/src/inspector**' 'build/release/inspector'
+
+      - name: Get branch name (merge)
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
+      - name: Get branch name (pull request)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+
+      - name: Create libv8.json
+        run: |
+          gitRevision=$(git ls-tree HEAD -- v8 | cut -c15-54)
+          timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+          MAJOR=$(grep "#define V8_MAJOR_VERSION" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
+          MINOR=$(grep "#define V8_MINOR_VERSION" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
+          BUILD=$(grep "#define V8_BUILD_NUMBER" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
+          PATCH=$(grep "#define V8_PATCH_LEVEL" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
+          v8Version="$MAJOR.$MINOR.$BUILD.$PATCH"
+          echo "v8Version=$v8Version" >> $GITHUB_ENV
+          echo "{
+            \"version\": \"$v8Version\",
+            \"git_revision\": \"$gitRevision\",
+            \"git_branch\": \"${{ env.BRANCH_NAME }}\",
+            \"svn_revision\": \"\",
+            \"timestamp\": \"$timestamp\"
+          }" >> build/release/libv8.json
+      - name: Download all workflow run artifsacts
+        uses: actions/download-artifact@v2
+
+      - name: List files
+        run: ls -la
+
+      - name: Move built libraries to final folder
+        run: |
+          mv libv8-release-arm/gen/** build/release/include/generated
+          mv libv8-release-arm/*.a build/release/libs/arm
+          # mv libv8-release-arm64/*.a build/release/libs/arm64
+          # mv libv8-release-ia32/*.a build/release/libs/x86
+          # mv libv8-release-x64/*.a build/release/libs/x86_64
+        
+      - name: Building libv8-${{ env.v8Version }}-release.tar.bz2...
+        run: tar -cvj -f libv8-${{ env.v8Version }}-release.tar.bz2 libv8.json libs include
+        working-directory: ./build/release
+            
+      - name: Archive Build
+        uses: actions/upload-artifact@v2
+        with:
+          name: libv8-${{ env.v8Version }}-release
+          path: |
+            build/release/libv8-*-release.tar.bz2
+          
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: |
+            libv8-release-arm
+            # libv8-release-arm64
+            # libv8-release-ia32
+            # libv8-release-x64

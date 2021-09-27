@@ -33,7 +33,6 @@ function verify_platform()
   fi
   echo ${valid_platform}
 }
-PLATFORM=$(verify_platform $1)
 
 # Install NDK
 function installNDK() {
@@ -52,10 +51,11 @@ fi
 
 gclient config --name v8 --unmanaged "https://chromium.googlesource.com/v8/v8.git"
 
-if [[ ${MKSNAPSHOT_ONLY} = "1" ]]; then
+if [[ "$1" = "" ]]; then
   gclient sync ${GCLIENT_SYNC_ARGS}
   exit 0
 fi
+PLATFORM=$(verify_platform $1)
 
 if [[ ${PLATFORM} = "ios" ]]; then
   gclient sync --deps=ios ${GCLIENT_SYNC_ARGS}
