@@ -96,3 +96,20 @@ jobs:
 
       - name: Create directories
         run: mkdir -p 'build/release/libs' 'build/release/inspector' 'build/release/include/generated' 2>/dev/null
+
+      - name: Copy V8 files
+      - run: |
+          cp -R 'v8/include/**' 'build/release/include'
+          cp -R 'v8/src/inspector**' 'build/release/inspector'
+
+      - name: Get branch name (merge)
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
+      - name: Get branch name (pull request)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+
+    
