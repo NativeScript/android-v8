@@ -102,8 +102,8 @@ jobs:
 
       - name: Copy V8 files
         run: |
-          cp -R 'v8/include/**' 'build/release/include'
-          cp -R 'v8/src/inspector/**' 'build/release/inspector'
+          cp -R 'v8/include/*' 'build/release/include'
+          cp -R 'v8/src/inspector/*' 'build/release/inspector'
 
       - name: Get branch name (merge)
         if: github.event_name != 'pull_request'
