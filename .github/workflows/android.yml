@@ -72,13 +72,6 @@ jobs:
     name: Package
     # needs: build
     steps:
-      # - name: Setup docker workspace
-      #   run: |
-      #       sudo sh -c "chown -R ubuntu $HOME"
-      #       sudo sh -c "chmod 777 $GITHUB_WORKSPACE"
-      #       # sudo sh -c "chmod 777 $GITHUB_WORKSPACE/../../_temp"
-      #       sudo sh -c "chmod 777 /home"
-
       - uses: actions/checkout@v2
 
       - name: Setup Ubuntu environment
@@ -89,6 +82,16 @@ jobs:
           sudo apt-get install -y sudo apt-utils sudo lsb-core git python3 python
           git config --global user.email "git@job.com"; git config --global user.name "GitJob"
 
+      - name: Get branch name (merge)
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
+      - name: Get branch name (pull request)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+
       - name: Setup Build  V8
         run: |
           ./scripts/setup-build.sh
@@ -97,6 +100,11 @@ jobs:
 
       - name: Create directories
         run: mkdir -p 'build/release/libs' 'build/release/inspector' 'build/release/include/generated' 2>/dev/null
+
+      - name: Copy V8 files
+        run: |
+          cp -R './v8/include' 'build/release'
+          cp -R './v8/src/inspector' 'build/release'
 
       - name: Create libv8.json
         run: |
@@ -117,11 +125,6 @@ jobs:
             \"ndkVersion\": \"${{ env.NDK_VERSION }}\"
             \"ndkApiLevel\": \"${{ env.NDK_API_LEVEL }}\"
           }" >> build/release/libv8.json
-
-      - name: Copy V8 files
-        run: |
-          cp -R './v8/include' 'build/release'
-          cp -R './v8/src/inspector' 'build/release'
 
       # - name: Download all workflow run artifsacts
       #   uses: actions/download-artifact@v2
