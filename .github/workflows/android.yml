@@ -102,8 +102,8 @@ jobs:
 
       - name: Copy V8 files
         run: |
-          cp -R 'v8/include/*' 'build/release/include'
-          cp -R 'v8/src/inspector/*' 'build/release/inspector'
+          cp -R './v8/include' 'build/release'
+          cp -R './v8/src/inspector' 'build/release'
 
       - name: Get branch name (merge)
         if: github.event_name != 'pull_request'
@@ -117,6 +117,7 @@ jobs:
 
       - name: Create libv8.json
         run: |
+          source ./scripts/env.sh
           gitRevision=$(git ls-tree HEAD -- v8 | cut -c15-54)
           timestamp=$(date '+%Y-%m-%d %H:%M:%S')
           MAJOR=$(grep "#define V8_MAJOR_VERSION" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
@@ -129,8 +130,9 @@ jobs:
             \"version\": \"$v8Version\",
             \"git_revision\": \"$gitRevision\",
             \"git_branch\": \"${{ env.BRANCH_NAME }}\",
-            \"svn_revision\": \"\",
-            \"timestamp\": \"$timestamp\"
+            \"timestamp\": \"$timestamp\",
+            \"ndkVErsion\": \"${{ env.NDK_VERSION }}\"
+            \"ndkApiLevel\": \"${{ env.NDK_API_LEVEL }}\"
           }" >> build/release/libv8.json
 
       # - name: Download all workflow run artifsacts
