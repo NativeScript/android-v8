@@ -69,17 +69,15 @@ jobs:
   # Combine the various architecture builds with the headers and a custom libv8.json file
   package:
     runs-on: ubuntu-latest
-    container:
-      image: kudo/ubuntu-nonroot:20.04
     name: Package
     # needs: build
     steps:
-      - name: Setup docker workspace
-        run: |
-            sudo sh -c "chown -R ubuntu $HOME"
-            sudo sh -c "chmod 777 $GITHUB_WORKSPACE"
-            # sudo sh -c "chmod 777 $GITHUB_WORKSPACE/../../_temp"
-            sudo sh -c "chmod 777 /home"
+      # - name: Setup docker workspace
+      #   run: |
+      #       sudo sh -c "chown -R ubuntu $HOME"
+      #       sudo sh -c "chmod 777 $GITHUB_WORKSPACE"
+      #       # sudo sh -c "chmod 777 $GITHUB_WORKSPACE/../../_temp"
+      #       sudo sh -c "chmod 777 /home"
 
       - uses: actions/checkout@v2
 
@@ -100,21 +98,6 @@ jobs:
       - name: Create directories
         run: mkdir -p 'build/release/libs' 'build/release/inspector' 'build/release/include/generated' 2>/dev/null
 
-      - name: Copy V8 files
-        run: |
-          cp -R './v8/include' 'build/release'
-          cp -R './v8/src/inspector' 'build/release'
-
-      - name: Get branch name (merge)
-        if: github.event_name != 'pull_request'
-        shell: bash
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
-
-      - name: Get branch name (pull request)
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
-
       - name: Create libv8.json
         run: |
           source ./scripts/env.sh
@@ -131,9 +114,14 @@ jobs:
             \"git_revision\": \"$gitRevision\",
             \"git_branch\": \"${{ env.BRANCH_NAME }}\",
             \"timestamp\": \"$timestamp\",
-            \"ndkVErsion\": \"${{ env.NDK_VERSION }}\"
+            \"ndkVersion\": \"${{ env.NDK_VERSION }}\"
             \"ndkApiLevel\": \"${{ env.NDK_API_LEVEL }}\"
           }" >> build/release/libv8.json
+
+      - name: Copy V8 files
+        run: |
+          cp -R './v8/include' 'build/release'
+          cp -R './v8/src/inspector' 'build/release'
 
       # - name: Download all workflow run artifsacts
       #   uses: actions/download-artifact@v2
