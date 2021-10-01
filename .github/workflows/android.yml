@@ -63,8 +63,8 @@ jobs:
           path: |
             dist/${{ matrix.arch }}-release/**
             v8/outgn/${{ matrix.arch }}-release/gen
-            v8/outgn/${{ matrix.arch }}-release/gen/embedded.S
-            v8/outgn/${{ matrix.arch }}-release/gen/snapshot.cc
+            !v8/outgn/${{ matrix.arch }}-release/gen/embedded.S
+            !v8/outgn/${{ matrix.arch }}-release/gen/snapshot.cc
 
   # Combine the various architecture builds with the headers and a custom libv8.json file
   package:
@@ -134,11 +134,11 @@ jobs:
 
       - name: Move built libraries to final folder
         run: |
-          mv libv8-release-arm/gen/** build/release/include/generated
-          mv libv8-release-arm/*.a build/release/libs/arm
-          mv libv8-release-arm64/*.a build/release/libs/arm64
-          mv libv8-release-ia32/*.a build/release/libs/x86
-          mv libv8-release-x64/*.a build/release/libs/x86_64
+          mv libv8-release-arm/gen/* build/release/include/generated
+          mkdir build/release/libs/arm && mv libv8-release-arm/*.a build/release/libs/arm
+          mkdir build/release/libs/arm64 && mv libv8-release-arm64/*.a build/release/libs/arm64
+          mkdir build/release/libs/ia32 && mv libv8-release-ia32/*.a build/release/libs/x86
+          mkdir build/release/libs/x64 && mv libv8-release-x64/*.a build/release/libs/x86_64
             
       - name: Archive Build
         uses: actions/upload-artifact@v2
