@@ -61,7 +61,7 @@ jobs:
         with:
           name: libv8-release-${{ matrix.arch }}
           path: |
-            dist/${{ matrix.arch }}-release/**
+            dist/${{ matrix.arch }}-release/libv8.a
             v8/outgn/${{ matrix.arch }}-release/gen
             !v8/outgn/${{ matrix.arch }}-release/gen/embedded.S
             !v8/outgn/${{ matrix.arch }}-release/gen/snapshot.cc
