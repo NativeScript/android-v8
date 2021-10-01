@@ -72,7 +72,7 @@ jobs:
     container:
       image: kudo/ubuntu-nonroot:20.04
     name: Package
-    needs: build
+    # needs: build
     steps:
       - name: Setup docker workspace
         run: |
