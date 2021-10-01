@@ -149,7 +149,7 @@ jobs:
         with:
           name: libv8-android-${{ env.v8Version }}-release
           path: |
-            build/release/libv8-*-release.tar.bz2
+            build/release
           
       # - name: Delete uneeded artifacts
       #   uses: geekyeggo/delete-artifact@v1
