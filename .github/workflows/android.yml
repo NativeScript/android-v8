@@ -3,68 +3,68 @@ name: Build for Android
 on: [workflow_dispatch]
 
 jobs:
-  build:
-    strategy:
-      # max-parallel: 1
-      matrix:
-        # arch: ['arm' ,'arm64' ,'x86' ,'x64']
-        arch: ['arm']
-    runs-on: ubuntu-latest
-    name: ${{ matrix.arch }}
-    env:
-      DEBIAN_FRONTEND: noninteractive
-      TZ: UTC
-      CCACHE_DIR: ${{ github.workspace }}/.ccache
-      USE_CCACHE: 1
-    container:
-      image: kudo/ubuntu-nonroot:20.04
-    steps:
-      - name: Setup docker workspace
-        run: |
-            sudo sh -c "chown -R ubuntu $HOME"
-            sudo sh -c "chmod 777 $GITHUB_WORKSPACE"
-            # sudo sh -c "chmod 777 $GITHUB_WORKSPACE/../../_temp"
-            sudo sh -c "chmod 777 /home"
+  # build:
+  #   strategy:
+  #     # max-parallel: 1
+  #     matrix:
+  #       # arch: ['arm' ,'arm64' ,'x86' ,'x64']
+  #       arch: ['arm']
+  #   runs-on: ubuntu-latest
+  #   name: ${{ matrix.arch }}
+  #   env:
+  #     DEBIAN_FRONTEND: noninteractive
+  #     TZ: UTC
+  #     CCACHE_DIR: ${{ github.workspace }}/.ccache
+  #     USE_CCACHE: 1
+  #   container:
+  #     image: kudo/ubuntu-nonroot:20.04
+  #   steps:
+  #     - name: Setup docker workspace
+  #       run: |
+  #           sudo sh -c "chown -R ubuntu $HOME"
+  #           sudo sh -c "chmod 777 $GITHUB_WORKSPACE"
+  #           # sudo sh -c "chmod 777 $GITHUB_WORKSPACE/../../_temp"
+  #           sudo sh -c "chmod 777 /home"
 
-      - uses: actions/checkout@v2
+  #     - uses: actions/checkout@v2
 
-      - name: Setup Ubuntu environment
-        run: |
-          sudo ln -fs /usr/share/zoneinfo/UTC /etc/localtime
-          sudo apt-get update
-          sudo apt-get upgrade -y
-          sudo apt-get install -y sudo apt-utils sudo ccache lsb-core git python nodejs npm wget openjdk-8-jre openjdk-8-jdk
-          git config --global user.email "git@job.com"; git config --global user.name "GitJob"
+  #     - name: Setup Ubuntu environment
+  #       run: |
+  #         sudo ln -fs /usr/share/zoneinfo/UTC /etc/localtime
+  #         sudo apt-get update
+  #         sudo apt-get upgrade -y
+  #         sudo apt-get install -y sudo apt-utils sudo ccache lsb-core git python nodejs npm wget openjdk-8-jre openjdk-8-jdk
+  #         git config --global user.email "git@job.com"; git config --global user.name "GitJob"
 
-      - name: Setup Build  V8
-        run: |
-          ./scripts/setup-build.sh android
-          sudo apt-get install -y libatomic1-i386-cross && sudo sh -c 'echo "/usr/i686-linux-gnu/lib" >> /etc/ld.so.conf.d/i386-linux-gnu.conf' && sudo ldconfig
+  #     - name: Setup Build  V8
+  #       run: |
+  #         ./scripts/setup-build.sh android
+  #         sudo apt-get install -y libatomic1-i386-cross && sudo sh -c 'echo "/usr/i686-linux-gnu/lib" >> /etc/ld.so.conf.d/i386-linux-gnu.conf' && sudo ldconfig
 
-      - name: Retrieve ccache
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ${{ runner.os }}-ccache-${{ matrix.arch }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-ccache-${{ matrix.arch }}-
-            ${{ runner.os }}-ccache-
+  #     - name: Retrieve ccache
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: ${{ env.CCACHE_DIR }}
+  #         key: ${{ runner.os }}-ccache-${{ matrix.arch }}-${{ github.sha }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-ccache-${{ matrix.arch }}-
+  #           ${{ runner.os }}-ccache-
 
-      - name: Build
-        run: ./scripts/build.android.sh -l ${{ matrix.arch }}
+  #     - name: Build
+  #       run: ./scripts/build.android.sh -l ${{ matrix.arch }}
 
-      - name: Show summary of ccache configuration and statistics counters
-        run: ccache --show-stats
+  #     - name: Show summary of ccache configuration and statistics counters
+  #       run: ccache --show-stats
 
-      - name: Archive Build
-        uses: actions/upload-artifact@v2
-        with:
-          name: libv8-release-${{ matrix.arch }}
-          path: |
-            dist/${{ matrix.arch }}-release/**
-            v8/outgn/${{ matrix.arch }}-release/gen
-            v8/outgn/${{ matrix.arch }}-release/gen/embedded.S
-            v8/outgn/${{ matrix.arch }}-release/gen/snapshot.cc
+  #     - name: Archive Build
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: libv8-release-${{ matrix.arch }}
+  #         path: |
+  #           dist/${{ matrix.arch }}-release/**
+  #           v8/outgn/${{ matrix.arch }}-release/gen
+  #           v8/outgn/${{ matrix.arch }}-release/gen/embedded.S
+  #           v8/outgn/${{ matrix.arch }}-release/gen/snapshot.cc
 
   # Combine the various architecture builds with the headers and a custom libv8.json file
   package:
@@ -92,7 +92,10 @@ jobs:
           git config --global user.email "git@job.com"; git config --global user.name "GitJob"
 
       - name: Setup Build  V8
-        run: ./scripts/setup-build.sh
+        run: |
+          ./scripts/setup-build.sh
+          ls
+          ls v8
 
       - name: Create directories
         run: mkdir -p 'build/release/libs' 'build/release/inspector' 'build/release/include/generated' 2>/dev/null
@@ -130,36 +133,36 @@ jobs:
             \"timestamp\": \"$timestamp\"
           }" >> build/release/libv8.json
 
-      - name: Download all workflow run artifsacts
-        uses: actions/download-artifact@v2
+      # - name: Download all workflow run artifsacts
+      #   uses: actions/download-artifact@v2
 
-      - name: List files
-        run: ls -la
+      # - name: List files
+      #   run: ls -la
 
-      - name: Move built libraries to final folder
-        run: |
-          mv libv8-release-arm/gen/** build/release/include/generated
-          mv libv8-release-arm/*.a build/release/libs/arm
-          # mv libv8-release-arm64/*.a build/release/libs/arm64
-          # mv libv8-release-ia32/*.a build/release/libs/x86
-          # mv libv8-release-x64/*.a build/release/libs/x86_64
+      # - name: Move built libraries to final folder
+      #   run: |
+      #     mv libv8-release-arm/gen/** build/release/include/generated
+      #     mv libv8-release-arm/*.a build/release/libs/arm
+      #     # mv libv8-release-arm64/*.a build/release/libs/arm64
+      #     # mv libv8-release-ia32/*.a build/release/libs/x86
+      #     # mv libv8-release-x64/*.a build/release/libs/x86_64
         
-      - name: Building libv8-${{ env.v8Version }}-release.tar.bz2...
-        run: tar -cvj -f libv8-${{ env.v8Version }}-release.tar.bz2 libv8.json libs include
-        working-directory: ./build/release
+      # - name: Building libv8-${{ env.v8Version }}-release.tar.bz2...
+      #   run: tar -cvj -f libv8-${{ env.v8Version }}-release.tar.bz2 libv8.json libs include
+      #   working-directory: ./build/release
             
       - name: Archive Build
         uses: actions/upload-artifact@v2
         with:
-          name: libv8-${{ env.v8Version }}-release
+          name: libv8-android-${{ env.v8Version }}-release
           path: |
             build/release/libv8-*-release.tar.bz2
           
-      - name: Delete uneeded artifacts
-        uses: geekyeggo/delete-artifact@v1
-        with:
-          name: |
-            libv8-release-arm
-            # libv8-release-arm64
-            # libv8-release-ia32
-            # libv8-release-x64
+      # - name: Delete uneeded artifacts
+      #   uses: geekyeggo/delete-artifact@v1
+      #   with:
+      #     name: |
+      #       libv8-release-arm
+      #       # libv8-release-arm64
+      #       # libv8-release-ia32
+      #       # libv8-release-x64
