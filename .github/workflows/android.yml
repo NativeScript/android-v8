@@ -56,13 +56,19 @@ jobs:
       - name: Show summary of ccache configuration and statistics counters
         run: ccache --show-stats
 
+      - name: Prepare artefacts
+        run: |
+          mkdir package
+          mv dist/${{ matrix.arch }}-release/libv8.a package
+          mv v8/outgn/${{ matrix.arch }}-release/gen package/generated
+          rm package/generated/embedded.S
+          rm package/generated/snapshot.cc
+
       - name: Archive Build
         uses: actions/upload-artifact@v2
         with:
           name: libv8-release-${{ matrix.arch }}
-          path: |
-            dist/${{ matrix.arch }}-release/libv8.a
-            v8/outgn/${{ matrix.arch }}-release/gen
+          path: package
 
   # Combine the various architecture builds with the headers and a custom libv8.json file
   package:
@@ -134,7 +140,7 @@ jobs:
 
       - name: Move built libraries to final folder
         run: |
-          mv libv8-release-arm/gen build/release/include/generated
+          mv libv8-release-arm/generated build/release/include/generated
           mkdir build/release/libs/arm && mv libv8-release-arm/*.a build/release/libs/arm
           mkdir build/release/libs/arm64 && mv libv8-release-arm64/*.a build/release/libs/arm64
           mkdir build/release/libs/ia32 && mv libv8-release-ia32/*.a build/release/libs/x86
