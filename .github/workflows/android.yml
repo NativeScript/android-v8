@@ -130,7 +130,9 @@ jobs:
         uses: actions/download-artifact@v2
 
       - name: List files
-        run: ls -la
+        run: |
+          ls -la
+          ls -la libv8-release-arm
 
       - name: Move built libraries to final folder
         run: |
