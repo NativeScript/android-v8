@@ -63,8 +63,6 @@ jobs:
           path: |
             dist/${{ matrix.arch }}-release/libv8.a
             v8/outgn/${{ matrix.arch }}-release/gen
-            !v8/outgn/${{ matrix.arch }}-release/gen/embedded.S
-            !v8/outgn/${{ matrix.arch }}-release/gen/snapshot.cc
 
   # Combine the various architecture builds with the headers and a custom libv8.json file
   package:
