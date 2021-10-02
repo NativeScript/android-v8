@@ -99,7 +99,7 @@ jobs:
           ls v8
 
       - name: Create directories
-        run: mkdir -p 'build/release/libs' 'build/release/inspector' 'build/release/include/generated' 2>/dev/null
+        run: mkdir -p 'build/release/libs' 'build/release/inspector' 'build/release/include' 2>/dev/null
 
       - name: Copy V8 files
         run: |
@@ -134,7 +134,7 @@ jobs:
 
       - name: Move built libraries to final folder
         run: |
-          mv libv8-release-arm/gen/* build/release/include/generated
+          mv libv8-release-arm/gen build/release/include/generated
           mkdir build/release/libs/arm && mv libv8-release-arm/*.a build/release/libs/arm
           mkdir build/release/libs/arm64 && mv libv8-release-arm64/*.a build/release/libs/arm64
           mkdir build/release/libs/ia32 && mv libv8-release-ia32/*.a build/release/libs/x86
