@@ -7,8 +7,8 @@ jobs:
     strategy:
       # max-parallel: 1
       matrix:
-        # arch: ['arm' ,'arm64' ,'x86' ,'x64']
-        arch: ['arm']
+        arch: ['arm' ,'arm64' ,'x86' ,'x64']
+        # arch: ['arm']
     runs-on: ubuntu-latest
     name: ${{ matrix.arch }}
     env:
