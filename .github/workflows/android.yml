@@ -144,7 +144,7 @@ jobs:
           mkdir build/release/libs/arm && mv libv8-release-arm/*.a build/release/libs/arm
           mkdir build/release/libs/arm64 && mv libv8-release-arm64/*.a build/release/libs/arm64
           mkdir build/release/libs/x86 && mv libv8-release-x86/*.a build/release/libs/x86
-          mkdir build/release/libs/x64 && mv libv8-release-x64/*.a build/release/libs/x86_64
+          mkdir build/release/libs/x86_64 && mv libv8-release-x64/*.a build/release/libs/x86_64
             
       - name: Archive Build
         uses: actions/upload-artifact@v2
