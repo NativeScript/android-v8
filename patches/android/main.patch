@@ -1,8 +1,8 @@
 diff --git a/BUILD.gn b/BUILD.gn
-index 5e3045bfdc..081b3f9476 100644
+index f491f2a4e6..0c84ff541e 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -3619,6 +3619,8 @@ v8_source_set("v8_base_without_compiler") {
+@@ -3951,6 +3951,8 @@ v8_source_set("v8_base_without_compiler") {
  
    sources = [
      ### gcmole(all) ###
@@ -12,10 +12,10 @@ index 5e3045bfdc..081b3f9476 100644
      "src/api/api-natives.cc",
      "src/api/api.cc",
 diff --git a/include/js_protocol.pdl b/include/js_protocol.pdl
-index 9c0483ae70..4d506e1271 100644
+index b34c8551ad..5085b5329d 100644
 --- a/include/js_protocol.pdl
 +++ b/include/js_protocol.pdl
-@@ -1683,3 +1683,3108 @@ deprecated domain Schema
+@@ -1651,3 +1651,3108 @@ deprecated domain Schema
      returns
        # List of supported domains.
        array of Domain domains
@@ -3125,6 +3125,9 @@ index 9c0483ae70..4d506e1271 100644
 +      # Overrides user-visible description of the state.
 +      optional string summary
 \ No newline at end of file
+diff --git a/patch.diff b/patch.diff
+new file mode 100644
+index 0000000000..e69de29bb2
 diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
 new file mode 100644
 index 0000000000..01f503a51a
@@ -3307,41 +3310,43 @@ index 0000000000..9c79c44060
 +}
 \ No newline at end of file
 diff --git a/src/inspector/inspector_protocol_config.json b/src/inspector/inspector_protocol_config.json
-index bd4f9c534c..e15cf03bac 100644
+index bd4f9c534c..2a529d406a 100644
 --- a/src/inspector/inspector_protocol_config.json
 +++ b/src/inspector/inspector_protocol_config.json
-@@ -27,6 +27,34 @@
+@@ -27,7 +27,35 @@
              {
                  "domain": "HeapProfiler",
                  "async": ["collectGarbage"]
+-            }
 +            },
-+            {
-+                "domain": "Page",
-+                "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled", "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot"],
-+                "async": ["getResourceContent", "searchInResource"],
-+                "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
-+            },
-+            {
-+                "domain": "Network",
-+                "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions", "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception", "takeResponseBodyForInterceptionAsStream"],
-+                "async": ["getResponseBody", "getRequestPostData"]
-+            },
-+            {
-+                "domain": "DOM"
-+            },
-+            {
-+                "domain": "CSS",
-+                "async": ["enable"]
-+            },
-+            {
-+                "domain": "Overlay"
-+            },
-+            {
-+                "domain": "Log"
-+            },
-+            {
-+                "domain": "Security",
-+                "include": []
-             }
++                      {
++                          "domain": "Page",
++                          "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled", "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot"],
++                          "async": ["getResourceContent", "searchInResource"],
++                          "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
++                      },
++                      {
++                          "domain": "Network",
++                          "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions", "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception", "takeResponseBodyForInterceptionAsStream"],
++                          "async": ["getResponseBody", "getRequestPostData"]
++                      },
++                      {
++                          "domain": "DOM"
++                      },
++                      {
++                          "domain": "CSS",
++                          "async": ["enable"]
++                      },
++                      {
++                          "domain": "Overlay"
++                      },
++                      {
++                          "domain": "Log"
++                      },
++                      {
++                          "domain": "Security",
++                          "include": []
++                        }
          ]
      },
+ 

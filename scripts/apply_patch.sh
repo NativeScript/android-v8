@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
 pushd v8
-git apply --cached ../9.2.230.18.patch
+git apply --cached ../patches/android/main.patch
 git checkout -- .
 popd
