@@ -1,0 +1,27 @@
+name: Build for iOS
+
+on: [workflow_dispatch]
+
+env:
+  CACHE_KEY_SUFFIX: v2
+
+jobs:
+  build:
+    runs-on: macOS-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Build  V8
+        run: |
+          brew install coreutils
+          scripts/setup-build.sh ios
+
+      - name: Build V8
+        run: |
+          ./scripts/build.ios.sh
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist

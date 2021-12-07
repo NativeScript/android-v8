@@ -1,24 +1,25 @@
 diff --git a/BUILD.gn b/BUILD.gn
-index b2dde3f9d7..8c804b6aa2 100644
+index f491f2a4e6..0c84ff541e 100644
 --- a/BUILD.gn
 +++ b/BUILD.gn
-@@ -2063,6 +2063,8 @@ v8_source_set("v8_base_without_compiler") {
-     "include/v8-wasm-trap-handler-posix.h",
-     "include/v8.h",
-     "include/v8config.h",
+@@ -3951,6 +3951,8 @@ v8_source_set("v8_base_without_compiler") {
+ 
+   sources = [
+     ### gcmole(all) ###
 +    "src/V8NativeScriptExtension.h",
 +    "src/V8NativeScriptExtension.cc",
-     "src/api/api-arguments-inl.h",
      "src/api/api-arguments.cc",
-     "src/api/api-arguments.h",
+     "src/api/api-natives.cc",
+     "src/api/api.cc",
 diff --git a/include/js_protocol.pdl b/include/js_protocol.pdl
-index 3f5410d1e1..deaad6666b 100644
+index b34c8551ad..5085b5329d 100644
 --- a/include/js_protocol.pdl
 +++ b/include/js_protocol.pdl
-@@ -1584,3 +1584,3107 @@ deprecated domain Schema
+@@ -1651,3 +1651,3108 @@ deprecated domain Schema
      returns
        # List of supported domains.
        array of Domain domains
++
 +
 +# Actions and events related to the inspected page belong to the page domain.
 +domain Page
@@ -433,7 +434,7 @@ index 3f5410d1e1..deaad6666b 100644
 +  # Reloads given page optionally ignoring the cache.
 +  command reload
 +    parameters
-+      # If true, browser cache is ignored (as if the user pressed Shift+refresh).
++      # If true, browser cache is ignored (as if the user pressed Shiftrefresh).
 +      optional boolean ignoreCache
 +      # If set, the script will be injected into all frames of the inspected page after reload.
 +      # Argument will be ignored if reloading dataURL origin.
@@ -3123,12 +3124,16 @@ index 3f5410d1e1..deaad6666b 100644
 +      InsecureContentStatus insecureContentStatus
 +      # Overrides user-visible description of the state.
 +      optional string summary
+\ No newline at end of file
+diff --git a/patch.diff b/patch.diff
+new file mode 100644
+index 0000000000..e69de29bb2
 diff --git a/src/V8NativeScriptExtension.cc b/src/V8NativeScriptExtension.cc
 new file mode 100644
-index 0000000000..fac39a8f35
+index 0000000000..01f503a51a
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.cc
-@@ -0,0 +1,211 @@
+@@ -0,0 +1,146 @@
 +#include "V8NativeScriptExtension.h"
 +#include "objects/objects-inl.h"
 +#include "objects/contexts.h"
@@ -3212,74 +3217,6 @@ index 0000000000..fac39a8f35
 +	return h->address();
 +}
 +
-+Local<Value>* NativeScriptExtension::GetClosureObjects(Isolate* isolate, const Local<Function>& func, int* length)
-+{
-+	unsafe_arr<Local<Value>> arr;
-+
-+	i::Handle<i::JSReceiver> receiver = Utils::OpenHandle(*func);
-+
-+	bool isFunction = receiver->IsJSFunction();
-+
-+	if (!isFunction) {
-+		*length = static_cast<int>(arr.size());
-+		return arr.data();
-+	}
-+
-+	i::Handle<i::JSFunction> f = i::Handle<i::JSFunction>::cast(receiver);
-+
-+	i::Isolate* internal_isolate = reinterpret_cast<i::Isolate*>(isolate);
-+
-+	v8::internal::Context cxt = f->context();
-+
-+	i::ContextLookupFlags cxtFlags = i::FOLLOW_CHAINS;
-+
-+	if (!cxt.is_null() && !cxt.IsNativeContext())
-+	{
-+		v8::internal::ScopeInfo si = cxt.scope_info();
-+
-+		if (!si.is_null() && si.HasContext())
-+		{
-+			int len = si.length();
-+
-+			for (int i = 0; i < len; i++)
-+			{
-+				v8::internal::Object cur = si.get(i);
-+
-+				if (!cur.IsNullOrUndefined() && cur.IsString())
-+				{
-+					v8::internal::String s = i::String::cast(cur);
-+
-+					i::Handle<i::String> name = i::Handle<i::String>(s, internal_isolate);
-+
-+					i::PropertyAttributes attr;
-+					i::InitializationFlag init_flag;
-+					i::VariableMode var_mode;
-+					int idx;
-+
-+					i::Handle<v8::internal::Context> cxtHandle = i::Handle<v8::internal::Context>(cxt, internal_isolate);
-+					i::Handle<i::Object> o = v8::internal::Context::Lookup(cxtHandle, name, cxtFlags, &idx, &attr, &init_flag, &var_mode);
-+
-+					if (idx >= 0)
-+					{
-+						i::Handle<i::Context> hndCxt = i::Handle<i::Context>::cast(o);
-+						i::Handle<i::Object> obj = i::Handle<i::Object>(hndCxt->get(idx), internal_isolate);
-+
-+						if (!obj.is_null() && obj->IsObject())
-+						{
-+							Local<Value> local = Utils::ToLocal(obj);
-+
-+							arr.push_back(local);
-+						}
-+					}
-+				}
-+			} // for
-+		} // si != nullptr
-+	}
-+
-+	*length = static_cast<int>(arr.size());
-+	return arr.data();
-+}
-+
 +
 +void NativeScriptExtension::ReleaseClosureObjects(Local<Value>* closureObjects)
 +{
@@ -3298,18 +3235,21 @@ index 0000000000..fac39a8f35
 +
 +	internal::LookupIterator it(internal_isolate, o, intname, internal::LookupIterator::OWN);
 +	i::Handle<i::Object> maybe_pair = it.GetAccessors();
-+	i::Handle<i::NativeContext> native_context = it.GetHolder<i::JSReceiver>()->GetCreationContext();
++	i::MaybeHandle<i::NativeContext> native_context = it.GetHolder<i::JSReceiver>()->GetCreationContext();
 +
-+	i::MaybeHandle<i::Object> g = internal::AccessorPair::GetComponent(internal_isolate, native_context, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_GETTER);
++	if (!native_context.is_null()){
++		
++	i::MaybeHandle<i::Object> g = internal::AccessorPair::GetComponent(internal_isolate, native_context.ToHandleChecked(), i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_GETTER);
 +	if (!g.is_null())
 +	{
 +		getter = Utils::ToLocal(g.ToHandleChecked());
 +	}
 +
-+	i::MaybeHandle<i::Object> s = internal::AccessorPair::GetComponent(internal_isolate, native_context, i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_SETTER);
++	i::MaybeHandle<i::Object> s = internal::AccessorPair::GetComponent(internal_isolate, native_context.ToHandleChecked(), i::Handle<internal::AccessorPair>::cast(maybe_pair), i::AccessorComponent::ACCESSOR_SETTER);
 +	if (!s.is_null())
 +	{
 +		setter = Utils::ToLocal(s.ToHandleChecked());
++	}
 +	}
 +}
 +
@@ -3340,12 +3280,13 @@ index 0000000000..fac39a8f35
 +void NativeScriptExtension::CpuFeaturesProbe(bool cross_compile) {
 +	i::CpuFeatures::Probe(cross_compile);
 +}
+\ No newline at end of file
 diff --git a/src/V8NativeScriptExtension.h b/src/V8NativeScriptExtension.h
 new file mode 100644
-index 0000000000..1bb4fc36e0
+index 0000000000..9c79c44060
 --- /dev/null
 +++ b/src/V8NativeScriptExtension.h
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,21 @@
 +#include <vector>
 +#include "init/v8.h"
 +#include "api/api.h"
@@ -3355,8 +3296,6 @@ index 0000000000..1bb4fc36e0
 +	class NativeScriptExtension {
 +	public:
 +		static unsigned long GetAddress(const v8::Local<v8::Object>& obj);
-+
-+		static v8::Local<v8::Value>* GetClosureObjects(v8::Isolate* isolate, const v8::Local<v8::Function>& func, int* length);
 +
 +		static void ReleaseClosureObjects(v8::Local<v8::Value>* closureObjects);
 +
@@ -3369,42 +3308,45 @@ index 0000000000..1bb4fc36e0
 +		NativeScriptExtension();
 +	};
 +}
+\ No newline at end of file
 diff --git a/src/inspector/inspector_protocol_config.json b/src/inspector/inspector_protocol_config.json
-index 92bce2ad24..6503b4fcce 100644
+index bd4f9c534c..2a529d406a 100644
 --- a/src/inspector/inspector_protocol_config.json
 +++ b/src/inspector/inspector_protocol_config.json
-@@ -26,6 +26,34 @@
-             },
+@@ -27,7 +27,35 @@
              {
-                 "domain": "HeapProfiler"
+                 "domain": "HeapProfiler",
+                 "async": ["collectGarbage"]
+-            }
 +            },
-+            {
-+                "domain": "Page",
-+                "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled", "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot"],
-+                "async": ["getResourceContent", "searchInResource"],
-+                "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
-+            },
-+            {
-+                "domain": "Network",
-+                "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions", "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception", "takeResponseBodyForInterceptionAsStream"],
-+                "async": ["getResponseBody", "getRequestPostData"]
-+            },
-+            {
-+                "domain": "DOM"
-+            },
-+            {
-+                "domain": "CSS",
-+                "async": ["enable"]
-+            },
-+            {
-+                "domain": "Overlay"
-+            },
-+            {
-+                "domain": "Log"
-+            },
-+            {
-+                "domain": "Security",
-+                "include": []
-             }
++                      {
++                          "domain": "Page",
++                          "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled", "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot"],
++                          "async": ["getResourceContent", "searchInResource"],
++                          "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
++                      },
++                      {
++                          "domain": "Network",
++                          "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions", "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception", "takeResponseBodyForInterceptionAsStream"],
++                          "async": ["getResponseBody", "getRequestPostData"]
++                      },
++                      {
++                          "domain": "DOM"
++                      },
++                      {
++                          "domain": "CSS",
++                          "async": ["enable"]
++                      },
++                      {
++                          "domain": "Overlay"
++                      },
++                      {
++                          "domain": "Log"
++                      },
++                      {
++                          "domain": "Security",
++                          "include": []
++                        }
          ]
      },
+ 

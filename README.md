@@ -15,17 +15,17 @@ export PATH=`pwd`/depot_tools:"$PATH"
 sudo apt-get install curl libc6-dev-i386 g++-multilib
 ```
 
-* Download and extract Android NDK r21b
+* Download and extract Android NDK r22b
 
 Linux:
 ```
-curl -O https://dl.google.com/android/repository/android-ndk-r21b-linux-x86_64.zip
-unzip android-ndk-r21b-linux-x86_64.zip -d ndkr21b
+curl -O https://dl.google.com/android/repository/android-ndk-r22b-linux-x86_64.zip
+unzip android-ndk-r22b-linux-x86_64.zip -d ndkr22b
 ```
 
 * Export ANDROID_NDK_HOME environment variable
 ```
-export ANDROID_NDK_HOME=`pwd`/ndkr21b/android-ndk-r21b
+export ANDROID_NDK_HOME=`pwd`/ndkr22b/android-ndk-r22b
 ```
 
 * `fetch v8` (this will create a `v8` repo folder and add a `.gclient` file)
@@ -47,10 +47,10 @@ solutions = [
 target_os = ['android']
 ```
 
-* checkout tag 8.3.110.9
+* checkout tag 9.2.230.18
 ```
 cd v8
-git checkout 8.3.110.9
+git checkout 9.2.230.18
 ```
 
 * Run sync
