@@ -42,11 +42,11 @@ do
         if [[ $BUILD_TYPE == "debug" ]] ;then
                 gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="is_component_build=true v8_use_external_startup_data=true is_debug=true symbol_level=2 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false"
         else
-                ARGS="use_goma=false is_clang=true enable_resource_allowlist_generation=false is_component_build=true v8_use_external_startup_data=false is_official_build=true use_thin_lto=false is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false use_custom_libcxx=false cc_wrapper=\"ccache\""
+                ARGS="use_goma=false is_clang=true enable_resource_allowlist_generation=false is_component_build=true v8_use_external_startup_data=false is_official_build=true use_thin_lto=false is_debug=false symbol_level=0 target_cpu=\"$CURRENT_ARCH\" v8_target_cpu=\"$CURRENT_ARCH\" v8_enable_i18n_support=false target_os=\"android\" v8_android_log_stdout=false use_custom_libcxx=true cc_wrapper=\"ccache\""
                 if [[ $CURRENT_ARCH =~ 64$ ]] ;then
                         gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="$ARGS"
                 else
-                        gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="$ARGS android32_ndk_api_level=$NDK_API_LEVEL android_ndk_major_version=$NDK_API_LEVEL android_sdk_platform_version=$NDK_API_LEVEL android_sdk_version=$NDK_API_LEVEL android64_ndk_api_level=$NDK_API_LEVEL"
+                        gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="$ARGS android32_ndk_api_level=$NDK_API_LEVEL android_ndk_major_version=$NDK_MAJOR_VERSION android_sdk_platform_version=$ANDROID_SDK_PLATFORM_VERSION android_sdk_build_tools_version=$ANDROID_SDK_BUILD_TOOLS_VERSION  android_sdk_version=$ANDROID_SDK_PLATFORM_VERSION"
                 fi
 
         fi
@@ -97,7 +97,7 @@ do
         fi
 
         THIRD_PARTY_OUT=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/buildtools/third_party
-        #LAST_PARAM="${LAST_PARAM} $THIRD_PARTY_OUT/libc++/libc++/*.o $THIRD_PARTY_OUT/libc++abi/libc++abi/*.o"
+        LAST_PARAM="${LAST_PARAM} $THIRD_PARTY_OUT/libc++/libc++/*.o $THIRD_PARTY_OUT/libc++abi/libc++abi/*.o"
         
         $CURRENT_BUILD_TOOL/ar r $DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE/libv8.a ${LAST_PARAM}
 done
