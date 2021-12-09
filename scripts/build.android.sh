@@ -46,7 +46,7 @@ do
                 if [[ $CURRENT_ARCH =~ 64$ ]] ;then
                         gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="$ARGS"
                 else
-                        gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="$ARGS android32_ndk_api_level=$NDK_API_LEVEL android_ndk_major_version=$NDK_MAJOR_VERSION android_sdk_platform_version=$ANDROID_SDK_PLATFORM_VERSION android_sdk_build_tools_version=$ANDROID_SDK_BUILD_TOOLS_VERSION  android_sdk_version=$ANDROID_SDK_PLATFORM_VERSION"
+                        gn gen $BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE --args="$ARGS android32_ndk_api_level=$NDK_API_LEVEL android_ndk_major_version=$NDK_MAJOR_VERSION android_sdk_platform_version=$ANDROID_SDK_PLATFORM_VERSION android_sdk_build_tools_version=\"$ANDROID_SDK_BUILD_TOOLS_VERSION\"  android_sdk_version=$ANDROID_SDK_PLATFORM_VERSION android64_ndk_api_level=21"
                 fi
 
         fi
