@@ -41,6 +41,27 @@ jobs:
           ./scripts/setup-build.sh android
           sudo apt-get install -y libatomic1-i386-cross && sudo sh -c 'echo "/usr/i686-linux-gnu/lib" >> /etc/ld.so.conf.d/i386-linux-gnu.conf' && sudo ldconfig
 
+      - name: Create libv8.json
+        run: |
+          source ./scripts/env.sh
+          gitRevision=$(git -C v8 rev-parse HEAD)
+          timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+          MAJOR=$(grep "#define V8_MAJOR_VERSION" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
+          MINOR=$(grep "#define V8_MINOR_VERSION" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
+          BUILD=$(grep "#define V8_BUILD_NUMBER" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
+          PATCH=$(grep "#define V8_PATCH_LEVEL" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
+          v8Version="$MAJOR.$MINOR.$BUILD.$PATCH"
+          echo "v8Version=$v8Version" >> $GITHUB_ENV
+          echo "{
+            \"version\": \"$v8Version\",
+            \"git_revision\": \"$gitRevision\",
+            \"git_branch\": \"${{ env.BRANCH_NAME }}\",
+            \"timestamp\": \"$timestamp\",
+            \"ndkVersion\": \"$NDK_VERSION\",
+            \"ndkApiLevel\": \"$NDK_API_LEVEL\"
+          }" >> dist/${{ matrix.arch }}-release/libv8.json
+
+
       - name: Retrieve ccache
         uses: actions/cache@v2
         with:
@@ -70,14 +91,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup Ubuntu environment
-        run: |
-          sudo ln -fs /usr/share/zoneinfo/UTC /etc/localtime
-          sudo apt-get update
-          sudo apt-get upgrade -y
-          sudo apt-get install -y sudo apt-utils sudo lsb-core git python3 python
-          git config --global user.email "git@job.com"; git config --global user.name "GitJob"
-
       - name: Get branch name (merge)
         if: github.event_name != 'pull_request'
         shell: bash
@@ -88,60 +101,31 @@ jobs:
         shell: bash
         run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
 
-      - name: Setup Build  V8
-        run: |
-          ./scripts/setup-build.sh
-          ls
-          ls v8
-
-      - name: Create directories
-        run: mkdir -p 'build/release/libs' 'build/release/inspector' 'build/release/include' 2>/dev/null
-
-      - name: Copy V8 files
-        run: |
-          cp -R './v8/include' 'build/release'
-          cp -R './v8/src/inspector' 'build/release'
-
-      - name: Create libv8.json
-        run: |
-          source ./scripts/env.sh
-          gitRevision=$(git -C v8 rev-parse HEAD)
-          timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-          MAJOR=$(grep "#define V8_MAJOR_VERSION" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
-          MINOR=$(grep "#define V8_MINOR_VERSION" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
-          BUILD=$(grep "#define V8_BUILD_NUMBER" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
-          PATCH=$(grep "#define V8_PATCH_LEVEL" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
-          v8Version="$MAJOR.$MINOR.$BUILD.$PATCH"
-          echo "v8Version=$v8Version" >> $GITHUB_ENV
-          echo "{
-            \"version\": \"$v8Version\",
-            \"git_revision\": \"$gitRevision\",
-            \"git_branch\": \"${{ env.BRANCH_NAME }}\",
-            \"timestamp\": \"$timestamp\",
-            \"ndkVersion\": \"$NDK_VERSION\",
-            \"ndkApiLevel\": \"$NDK_API_LEVEL\"
-          }" >> build/release/libv8.json
-
       - name: Download all workflow run artifsacts
         uses: actions/download-artifact@v2
 
-      - name: List files
-        run: |
-          ls -la
-          ls -la libv8-release-arm
-
       - name: Move built libraries to final folder
         run: |
-          mv libv8-release-arm/generated build/release/include/generated
+          mv libv8-release-arm/generated build/release/generated
+          mv libv8-release-arm/include build/release/include
+          mv libv8-release-arm/v8_inspector build/release/v8_inspector
+          mv libv8-release-arm/libv8.json build/release/libv8.json
           mkdir build/release/libs/arm && mv libv8-release-arm/*.a build/release/libs/arm
           mkdir build/release/libs/arm64 && mv libv8-release-arm64/*.a build/release/libs/arm64
           mkdir build/release/libs/x86 && mv libv8-release-x86/*.a build/release/libs/x86
           mkdir build/release/libs/x64 && mv libv8-release-x64/*.a build/release/libs/x64
-            
+
+      - name: get v8 version
+        id: version
+        uses: notiz-dev/github-action-json-property@release
+        with: 
+            path: 'build/release/libv8.json'
+            prop_path: 'version'
+          
       - name: Archive Build
         uses: actions/upload-artifact@v2
         with:
-          name: libv8-android-${{ env.v8Version }}-release
+          name: libv8-android-${{ steps.version.outputs.prop }}-release
           path: |
             build/release
           
