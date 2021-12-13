@@ -16,14 +16,7 @@ jobs:
       TZ: UTC
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       USE_CCACHE: 1
-    container:
-      image: kudo/ubuntu-nonroot:20.04
     steps:
-      - name: Setup docker workspace
-        run: |
-            sudo sh -c "chown -R ubuntu $HOME"
-            sudo sh -c "chmod 777 $GITHUB_WORKSPACE"
-            sudo sh -c "chmod 777 /home"
 
       - uses: actions/checkout@v2
 
@@ -32,7 +25,7 @@ jobs:
           sudo ln -fs /usr/share/zoneinfo/UTC /etc/localtime
           sudo apt-get update
           sudo apt-get upgrade -y
-          sudo apt-get install -y sudo apt-utils sudo ccache lsb-core git python nodejs npm wget openjdk-8-jre openjdk-8-jdk
+          sudo apt-get install -y apt-utils sudo ccache lsb-core git python nodejs npm wget openjdk-8-jre openjdk-8-jdk
           git config --global user.email "git@job.com"; git config --global user.name "GitJob"
 
       - name: Get branch name (merge)
