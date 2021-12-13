@@ -74,15 +74,18 @@ do
         COUNT=$COUNT+1
         V8_FOLDERS_LEN=${#V8_FOLDERS[@]}
         LAST_PARAM=""
+        CURRENT_DIST_DIR="$DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE"
         for CURRENT_V8_FOLDER in ${V8_FOLDERS[@]}
         do
         LAST_PARAM="${LAST_PARAM} ${OUTFOLDER}/obj/${CURRENT_V8_FOLDER}/*.o"
         done
 
         $CURRENT_BUILD_TOOL/ar r $OUTFOLDER/obj/third_party/inspector_protocol/libinspector_protocol.a $OUTFOLDER/obj/third_party/inspector_protocol/crdtp/*.o $OUTFOLDER/obj/third_party/inspector_protocol/crdtp_platform/*.o
-        cp "$OUTFOLDER/obj/third_party/inspector_protocol/libinspector_protocol.a" "$DIST_DIR/${CURRENT_ARCH}${DIST_SUFFIX}"
+        cp "$OUTFOLDER/obj/third_party/inspector_protocol/libinspector_protocol.a" "$CURRENT_DIST_DIR/libinspector_protocol.a"
 
-        LAST_PARAM="${LAST_PARAM} $OUTFOLDER/obj/third_party/zlib/zlib/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib_adler32_simd/*.o ${OUTFOLDER}/obj/third_party/zlib/google/compression_utils_portable/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib_inflate_chunk_simd/*.o"
+        ZLIB_INPUT="${OUTFOLDER}/obj/third_party/zlib/zlib/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib_adler32_simd/*.o ${OUTFOLDER}/obj/third_party/zlib/google/compression_utils_portable/*.o ${OUTFOLDER}/obj/third_party/zlib/zlib_inflate_chunk_simd/*.o"
+	ar r $OUTFOLDER/obj/third_party/zlib/libzip.a $ZLIB_INPUT
+    	cp "$OUTFOLDER/obj/third_party/zlib/libzip.a" "$CURRENT_DIST_DIR/libzip.a"
 
         LAST_PARAM="${LAST_PARAM} ${OUTFOLDER}/obj/third_party/android_ndk/cpu_features/*.o"
         LAST_PARAM="${LAST_PARAM} ${OUTFOLDER}/obj/cppgc_base/*.o ${OUTFOLDER}/obj/v8_cppgc_shared/*.o"
@@ -98,6 +101,30 @@ do
 
         THIRD_PARTY_OUT=$BUILD_DIR_PREFIX/$CURRENT_ARCH-$BUILD_TYPE/obj/buildtools/third_party
         LAST_PARAM="${LAST_PARAM} $THIRD_PARTY_OUT/libc++/libc++/*.o $THIRD_PARTY_OUT/libc++abi/libc++abi/*.o"
+
         
-        $CURRENT_BUILD_TOOL/ar r $DIST_DIR/$CURRENT_ARCH-$BUILD_TYPE/libv8.a ${LAST_PARAM}
+        $CURRENT_BUILD_TOOL/ar r $CURRENT_DIST_DIR/libv8.a ${LAST_PARAM}
+        
+        # include files
+        rsync -r --exclude '.git' --exclude '.cache' --exclude 'DEPS' --exclude 'DIR_METADATA' "$V8_DIR/include/" "$CURRENT_DIST_DIR/include/"
+        rsync -r --exclude '.git' --exclude '.git' "${OUTFOLDER}/gen/include/" "$CURRENT_DIST_DIR/include/"
+        rsync -r --exclude '.git' --exclude '.git' "$V8_DIR/third_party/android_ndk/sources/cxx-stl/llvm-libc++/include/" "$CURRENT_DIST_DIR/include/libc++/"
+        
+        # generated files
+        rsync -r --exclude '.git' --exclude '.cache' --exclude 'snapshot.cc' --exclude 'embedded.S' "${OUTFOLDER}/gen/" "$CURRENT_DIST_DIR/generated/"
+        
+        mkdir -p "$CURRENT_DIST_DIR/v8_inspector"
+        cp -r "$CURRENT_DIST_DIR/generated/builtins-generated" "$CURRENT_DIST_DIR/v8_inspector"
+        INSPECTOR_LIST=($(grep "\"+.*\""  $V8_DIR/src/inspector/DEPS | sed 's/[+,"]//g'))
+        # remove last one ../../third_party/inspector_protocol/crdtp
+        unset INSPECTOR_LIST[-1]
+	INSPECTOR_LIST+=("base/trace_event")
+
+	for INSPECTOR_FILE in ${INSPECTOR_LIST[@]}
+	do
+		rsync -aR --exclude '.git' --exclude '.cache' "$INSPECTOR_FILE" "$CURRENT_DIST_DIR/v8_inspector/"
+	done
+
+
+        
 done
