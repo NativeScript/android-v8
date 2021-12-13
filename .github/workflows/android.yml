@@ -16,6 +16,8 @@ jobs:
       TZ: UTC
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       USE_CCACHE: 1
+    container:
+      image: kudo/ubuntu-nonroot:20.04
     steps:
       - name: Setup docker workspace
         run: |
