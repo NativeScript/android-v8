@@ -98,6 +98,7 @@ jobs:
       - name: Create libv8.json
         run: |
           source ./scripts/env.sh
+          gitRepo=$(git config --get remote.origin.url)
           gitRevision=$(git -C v8 rev-parse HEAD)
           timestamp=$(date '+%Y-%m-%d %H:%M:%S')
           MAJOR=$(grep "#define V8_MAJOR_VERSION" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
@@ -105,14 +106,20 @@ jobs:
           BUILD=$(grep "#define V8_BUILD_NUMBER" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
           PATCH=$(grep "#define V8_PATCH_LEVEL" "v8/include/v8-version.h" | awk '{print $NF}' | tr -d '[[:space:]]')
           v8Version="$MAJOR.$MINOR.$BUILD.$PATCH"
+          ndkVersion=$(grep "Pkg.Revision" /Volumes/data/dev/nativescript/android-v8/v8/android-ndk-r22/source.properties | awk '{print $NF}' | tr -d '[[:space:]]')
           echo "v8Version=$v8Version" >> $GITHUB_ENV
           echo "{
             \"version\": \"$v8Version\",
+            \"git_repo\": \"$gitRepo\",
             \"git_revision\": \"$gitRevision\",
             \"git_branch\": \"${{ env.BRANCH_NAME }}\",
             \"timestamp\": \"$timestamp\",
-            \"ndkVersion\": \"$NDK_VERSION\",
-            \"ndkApiLevel\": \"$NDK_API_LEVEL\"
+            \"sdkPlatformVersion\": \"$ANDROID_SDK_PLATFORM_VERSION\",
+            \"sdkBuildToolsVersion\": \"$ANDROID_SDK_BUILD_TOOLS_VERSION\",
+            \"ndkRevision\": \"$NDK_VERSION\",
+            \"ndkVersion\": \"$ndkVersion\",
+            \"ndkApiLevel\": \"$NDK_API_LEVEL\",
+            \"ndk64ApiLevel\": \"$NDK_64_API_LEVEL\"
           }" >> build/release/libv8.json
 
       - name: Download all workflow run artifsacts
@@ -123,7 +130,7 @@ jobs:
           mv libv8-release-arm/generated build/release/generated
           mv libv8-release-arm/include build/release/include
           mv libv8-release-arm/v8_inspector build/release/v8_inspector
-          mkdir build/release/libs/arm && mv libv8-release-arm/*.a build/release/libs/arm
+          mkdir build/release/libs/arm && mv libv8-release-arm/*.a build/release/libs/armeabi-v7a
           mkdir build/release/libs/arm64-v8a && mv libv8-release-arm64/*.a build/release/libs/arm64-v8a
           mkdir build/release/libs/x86 && mv libv8-release-x86/*.a build/release/libs/x86
           mkdir build/release/libs/x86_64 && mv libv8-release-x64/*.a build/release/libs/x86_64
